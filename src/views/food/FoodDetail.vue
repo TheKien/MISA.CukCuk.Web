@@ -14,22 +14,39 @@
           </div>
           <!-- <form> -->
           <div class="m-modal-content">
-            <!-- Sở thích phục vụ -->
             <div class="m-tab-bar">
-              <div class="tab-conversions">Thông tin chung</div>
-              <div class="m-pl-8">Sở thích phục vụ</div>
+              <div
+                class="m-tab"
+                :class="{ 'tab-conversions': tabIndex == 0 }"
+                @click="tabIndex = 0"
+              >
+                Thông tin chung
+              </div>
+              <div
+                class="m-tab"
+                :class="{ 'tab-conversions': tabIndex == 1 }"
+                @click="tabIndex = 1"
+              >
+                Sở thích phục vụ
+              </div>
             </div>
-            <div class="m-flex">
+            <!-- Thông tin chung -->
+            <div
+              class="m-flex-justify-content-between"
+              style="padding: 6px 8px"
+              v-show="tabIndex == 0"
+            >
               <div style="width: 506px">
                 <div class="m-row m-pr-20">
                   <div class="m-modal-col-3">Tên món <span>(*)</span></div>
-                  <div class="m-modal-col-9">
-                    <input type="text" class="m-input" />
+                  <div class="m-modal-col-9 m-flex-item-center">
+                    <input type="text" class="m-input m-input-error" />
+                    <div class="mi-16 mi-warning"></div>
                   </div>
                 </div>
                 <div class="m-row">
                   <div class="m-modal-col-3">Mã món <span>(*)</span></div>
-                  <div class="m-modal-col-9">
+                  <div class="m-modal-col-9 m-flex-item-center">
                     <input type="text" class="m-input" />
                   </div>
                 </div>
@@ -87,25 +104,84 @@
                   </div>
                 </div>
               </div>
-              <div>
-                  <legend>Ảnh đại diện</legend>
-                  <div class="m-photo m-photo-default"></div>
+              <div class="m-photo">
+                <legend>Ảnh đại diện</legend>
+                <div class="m-flex">
+                  <div class="m-photo-default"></div>
+                  <!-- <div class="m-photo-icon"> Biểu tượng</div>   -->
                   <div class="m-btn-box">
-                    <span class="m-btn m-btn-add-photo">...</span>
-                    <span class="m-btn m-btn-delete-photo">
-                      <i class="fas fa-times"></i>
-                    </span>
+                    <div class="m-btn m-btn-add-photo">...</div>
+                    <br />
+                    <div class="m-btn m-btn-delete-photo">
+                      <i class="fas fa-times" style="color: red"></i>
+                    </div>
                   </div>
                 </div>
+
                 <div class="m-photo-label">
                   Chọn các ảnh có định dạng <br />
                   <b>(.jpg, .jpeg, .png, .gif)</b>
                 </div>
+              </div>
+            </div>
+            <!-- Sở thích phục vụ -->
+            <div v-show="tabIndex == 1">
+              <div class="m-modal-grid-view">
+                <div>Món ăn:</div>
+                <div class="m-flex" style="margin: 8px 0">
+                  <div class="mi-32 mi-info"></div>
+                  <div class="m-modal-info">
+                    Ghi lại các sở thích của khách hàng giúp nhân viên phục vụ
+                    chọn nhanh order.<br />
+                    VD: không cay/ít hành/thêm phomai...
+                  </div>
+                </div>
+
+                <table class="m-modal-table">
+                  <thead>
+                    <tr>
+                      <th>Sở thích phục vụ</th>
+                      <th>Thu thêm</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, index) in modifiers" :key="index">
+                      <td>
+                        <input
+                          type="text"
+                          class="m-input"
+                          v-model="row.ModifierName"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          class="m-input"
+                          v-model="row.AdditionalCharge"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="m-end-tab">
+                  <button
+                    class="m-btn m-btn-icon m-mr-5"
+                    @click="onClickAddRow()"
+                  >
+                    <i class="mi mi-16 mi-new m-mr-8"></i>
+                    Thêm dòng
+                  </button>
+                  <button class="m-btn m-btn-icon">
+                    <i class="mi mi-16 mi-delete m-mr-8"></i>
+                    Xóa dòng
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="m-modal-footer">
             <div class="m-footer-left">
-              <button class="m-btn m-btn-icon">
+              <button class="m-btn m -btn-icon">
                 <i class="mi mi-16 mi-help m-mr-8"></i>
                 Giúp
               </button>
@@ -119,34 +195,13 @@
                 <i class="mi-16 mi-save-add m-mr-8"></i>
                 Cất và thêm
               </button>
-              <button class="m-btn m-btn-icon">
+              <button class="m-btn m-btn-icon" @click="onClickClose()">
                 <i class="mi-16 mi-cancel m-mr-8"></i>
                 Hủy bỏ
               </button>
             </div>
           </div>
           <!-- </form> -->
-          <!-- <div class="m-modal-grid-view">
-              <table class="m-modal-table">
-                <tr>
-                  <th style="width: 5%;">STT</th>
-                  <th style="width: 25%;">Đơn vị chuyển đổi</th>
-                  <th style="width: 20%;">Tỷ lệ chuyển đổi</th>
-                  <th style="width: 20%;">Phép tính</th>
-                  <th>Mô tả</th>
-                </tr>
-              </table>
-            </div> -->
-          <!-- <div class="m-end-tab">
-              <button class="m-btn m-btn-icon m-mr-5">
-                <i class="mi mi-16 mi-new m-mr-8"></i>
-                Thêm dòng
-              </button>
-              <button class="m-btn m-btn-icon">
-                <i class="mi mi-16 mi-delete m-mr-8"></i>
-                Xóa dòng
-              </button>
-            </div> -->
         </div>
         <div class="modal-background"></div>
       </div>
@@ -157,6 +212,40 @@
 <script>
 export default {
   props: ["isShowModal"],
+  created: function () {},
+
+  data() {
+    return {
+      /**
+       * tab hiện tại 0 - thông tin chung, 1 - sở thích phụ vụ
+       */
+      tabIndex: 0,
+      /* Đối tượng sở thích phục vụ */
+      modifier: {
+        ModifierName: null,
+        ModifierId: null,
+        AdditionalCharge: null,
+      },
+      /* List danh sách sở thích phục vụ */
+      modifiers: [
+        // {
+        //   ModifierName: "Thêm đường",
+        //   ModifierId: "Thêm đường",
+        //   AdditionalCharge: 1234556,
+        // },
+      ],
+      
+    };
+  },
+  methods: {
+    onClickClose() {
+      this.$emit("onClickClose");
+    },
+
+    onClickAddRow() {
+      this.modifiers.push(this.modifier);
+    },
+  },
 };
 </script>
 

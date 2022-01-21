@@ -9,6 +9,12 @@
     min-height: 24px;
     margin-right: 8px;
 }
+.mi-32{
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+}
 .mi-16 {
     width: 16px;
     height: 16px;
@@ -105,4 +111,19 @@
     background-repeat: no-repeat;
     background-position: 0 center;
     width: 22px;
+}
+.mi-pen{
+    background-image: url(../../images/icon/selectIconMenu.png);
+    background-repeat: no-repeat;
+    background-position: 2px 2px;
+}
+.mi-warning{
+    background-image: url(../../images/icon/exclamation.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.mi-info{
+    background-image: url(../../images/icon/icon-info32-2.png);
+    background-repeat: no-repeat;
+    background-position: center center;
 }

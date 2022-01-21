@@ -1,63 +1,159 @@
-.m-paginate{
-    height: 28px;
-    width: 100%;
-    padding-right: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    bottom: 8px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    z-index: 1;
+.m-paginate {
+  height: 28px;
+  width: 100%;
+  padding-right: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  bottom: 8px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  z-index: 1;
 }
-.m-paginate .mi-16{
-    cursor: pointer;
+.m-paginate .mi-16 {
+  cursor: pointer;
 }
 /* LEFT */
-.m-paginate .m-paging-left{
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    line-height: 26px;
+.m-paginate .m-paging-left {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  line-height: 26px;
 }
-.m-page-bar{
-    display: flex;
-    align-items: center;
+.m-page-bar {
+  display: flex;
+  align-items: center;
 }
-.m-page-bar div.mi-16{
+.m-page-bar div.mi-16 {
+  height: 22px;
+  width: 22px;
+  margin-left: 8px;
+  border: 1px solid #fff;
+}
+.m-page-bar div.mi-16:hover {
+  border-color: #ccc;
+  background-color: #f2f2f2;
+}
+.m-text-paging {
+  padding: 0 4px;
+  color: #333f49;
+}
+
+.m-chosse-size {
+  margin-left: 20px;
+}
+.m-chosse-size .m-combobox {
+  height: 24px !important;
+  width: 50px;
+  border: 1px solid #ccc;
+}
+.m-chosse-size .m-combobox input {
+  background-color: #f2f2f2 !important;
+  color: #333f49;
+}
+.m-chosse-size .m-combobox button {
+  background-color: #fff !important;
+  color: #333f49;
+  width: 24px !important;
+}
+.m-paginate .m-paging-center .m-paging-number div.m-page:hover {
+  background-color: #bbbbbb;
+}
+/* Combobox pagesize */
+.page-size-text {
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  width: 36px;
+  background-color: #f2f2f2;
+}
+.page-size-text input{
+    width: 100%;
+    height: 22px;
+    border: unset;
+}
+.m-page-size {
+  border: 1px solid #babec5;
+  position: relative;
+}
+.m-page-size .page-size-text {
+  height: 30px;
+  line-height: 30px;
+  padding-left: 10px;
+  min-width: 160px;
+}
+.m-page-size .m-dropdown {
+  padding: 0;
+}
+.m-page-size .m-icon-arrow {
+  height: 30px;
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.m-page-size .m-icon-arrow:hover {
+  background: #e0e0e0;
+}
+.m-page-size .m-icon-arrow div {
+  transition: transform 0.15s linear;
+}
+.m-page-size .m-dropdown.m-dropdown-active {
+  border: none;
+  background: #e0e0e0;
+}
+.m-page-size .m-dropdown .m-dropdown-list {
+  bottom: 32px;
+  top: unset;
+  left: -161px;
+  width: 192px;
+  z-index: 4;
+}
+.m-page-size .m-dropdown .m-dropdown-list .m-dropdown-item {
+  height: 32px;
+}
+.m-page-size .m-dropdown-item-active {
+  color: #fff;
+  background-color: #2ca01c;
+}
+.m-chosse-size{
+    border: 1px solid #d9d9d9;
+    height: 24;
+}
+.m-chosse-size-active{
+    border: 1px solid #0075c0;
+}
+.m-chosse-size .m-icon-arrow{
     height: 22px;
     width: 22px;
-    margin-left: 8px;
-    border: 1px solid #fff;
+    cursor: pointer;
 }
-.m-page-bar div.mi-16:hover{
-    border-color: #ccc;
-    background-color: #f2f2f2;
+.m-chosse-size .m-icon-arrow i
+{
+    height: 22px;
+    width: 22px;
+    vertical-align: middle;
+    text-align: center;
+    color: #999999;
 }
-.m-text-paging{
-    padding: 0 4px;
-    color: #333f49;
+.m-chosse-size .m-dropdown{
+    padding: 0;
 }
+.m-chosse-size .m-dropdown-active{
+    border: none;
+}
+.m-chosse-size .m-dropdown-list {
+    bottom: 24px;
+    left: -37px;
+}
+.m-chosse-size .m-dropdown-item-active{
+    background-color: #c1ddf1;
+}
+.m-chosse-size .m-dropdown-item:hover {
+    background: #d6e8f6;
+    color: #000;
+  }
 
 
-.m-chosse-size{
-    margin-left: 20px;
-}
-.m-chosse-size .m-combobox{
-    height: 24px !important;
-    width: 50px;
-    border: 1px solid #ccc;
-}
-.m-chosse-size .m-combobox input{
-    background-color: #f2f2f2 !important;
-    color: #333f49;
-}
-.m-chosse-size .m-combobox button{
-    background-color: #fff !important;
-    color: #333f49;
-    width: 24px !important;
-}
-.m-paginate .m-paging-center .m-paging-number div.m-page:hover{
-    background-color: #bbbbbb;
-}

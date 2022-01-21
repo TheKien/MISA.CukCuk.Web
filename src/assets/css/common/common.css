@@ -46,3 +46,11 @@
 .m-flex{
     display: flex;
 }
+.m-flex-justify-content-between{
+    display: flex;
+    justify-content: space-between;
+}
+.m-flex-item-center{
+    display: flex;
+    align-items: center;
+}

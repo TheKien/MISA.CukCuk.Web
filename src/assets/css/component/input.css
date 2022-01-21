@@ -13,3 +13,6 @@
 .m-input:focus{
     border-color: #0072BC;
 }
+.m-input-error{
+    border-color: #cf4c35;
+}

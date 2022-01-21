@@ -101,7 +101,7 @@
           <td style="min-width: 159px" class="m-text-center">
             <input
               type="checkbox"
-              :checked="food.DisplayStatus == 0 ? true : false"
+              :checked="food.DisplayStatus == 1 ? true : false"
               class="m-checkbox"
               disabled
             />
@@ -119,7 +119,10 @@ import $ from "jquery";
 
 export default {
   props: ["foodList"],
-
+  data() {
+    return {
+    };
+  },
   mounted: function () {
     $("table").on("scroll", function () {
       $("table > *").width($("table").width() + $("table").scrollLeft());

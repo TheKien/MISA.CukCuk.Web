@@ -41,81 +41,34 @@
           <food-grid :foodList="foodList"></food-grid>
         </div>
         <!-- paginate -->
-        <div class="m-paginate">
-          <div class="m-paging-left">
-            <div class="m-page-bar">
-              <div
-                class="mi-16 mi-page-first"
-                @click="pageIndex = 1"
-                :class="{ 'm-disable': pageIndex == 1 }"
-              ></div>
-              <div
-                class="mi-16 mi-page-pre"
-                @click="pageIndex--"
-                :class="{ 'm-disable': pageIndex == 1 }"
-              ></div>
-              <div class="m-text-paging">|</div>
-              <div class="m-text-paging">Trang</div>
-              <div>
-                <input
-                  type="input"
-                  value="1"
-                  :max="totalPage"
-                  v-model="pageIndex"
-                  class="m-input"
-                  style="height: 24px; width: 38px"
-                />
-              </div>
-              <div class="m-text-paging">trên {{ totalPage }}</div>
-              <div class="m-text-paging">|</div>
-              <div
-                class="mi-16 mi-page-next"
-                @click="pageIndex++"
-                :class="{ 'm-disable': pageIndex == totalPage }"
-              ></div>
-              <div
-                class="mi-16 mi-page-last"
-                @click="pageIndex = totalPage"
-                :class="{ 'm-disable': pageIndex == totalPage }"
-              ></div>
-              <div class="m-text-paging">|</div>
-              <div class="mi-16 mi-page-refresh"></div>
-              <div class="m-text-paging">|</div>
-            </div>
-            <div class="m-chosse-size">
-              <div class="m-combobox">
-                <input type="text" value="50" v-model="pageSize" />
-                <button class="m-combobox-btn mi-14 mi-dropdown"></button>
-              </div>
-            </div>
-          </div>
-          <div class="m-paging-right">
-            Hiển thị {{ pageIndex * pageSize - pageSize + 1 }} -
-            {{
-              pageSize * pageIndex > totalRecord
-                ? totalRecord
-                : pageSize * pageIndex
-            }}
-            trên {{ totalRecord }} kết quả
-          </div>
-        </div>
+        <base-pagination
+          :pageIndex="pageIndex"
+          :pageSize="pageSize"
+          :totalRecord="totalRecord"
+          :totalPage="totalPage"
+          :listPageSizes="listPageSizes"
+          @onChangePageIndex="onChangePageIndex"
+          @onChangePageSize="onChangePageSize"
+        ></base-pagination>
         <!-- end paginate -->
         <!-- end content main -->
       </section>
       <!-- END CONTENT -->
     </div>
     <food-detail
-    :isShowModal="isShowModal"
+      :isShowModal="isShowModal"
+      @onClickClose="onClickHideModalFood"
     ></food-detail>
   </div>
 </template>
 <script>
 import api from "../../apis/ApiService";
-import FoodDetail from './FoodDetail.vue';
+import BasePagination from "../../components/BasePagination.vue";
+import FoodDetail from "./FoodDetail.vue";
 import FoodGrid from "./FoodGrid.vue";
 // import Filters from "../../common/filters";
 export default {
-  components: { FoodGrid, FoodDetail },
+  components: { FoodGrid, FoodDetail, BasePagination },
 
   data() {
     return {
@@ -125,6 +78,7 @@ export default {
       /*========================= Paging =========================*/
       /* Số bản ghi trên 1 trang */
       pageSize: 50,
+      listPageSizes:[25,50,100],
       /* Số trang hiện tại */
       pageIndex: 1,
       /* Tổng số bản ghi */
@@ -146,10 +100,27 @@ export default {
         SortOrder: 0,
       },
       /*========================= Food =========================*/
+      /* Đối tượng món ăn */
+      food: {
+        FoodId: null,
+        FoodCode: null,
+        FoodName: null,
+        FoodOrder: null,
+        SellingPrice: null,
+        CostPrice: null,
+        Description: null,
+        ImageId: null,
+        FoodCategoryId: null,
+        MenuCategoryId: null,
+        UnitId: null,
+        DisplayStatus: null,
+        FoodModifer: [],
+        FoodKitchen: [],
+      },
       /* Danh sách món ăn */
       foodList: [],
       /* Form món ăn */
-      isShowModal: true,
+      isShowModal: false,
     };
   },
   created() {
@@ -169,10 +140,33 @@ export default {
      * Hiển thị modal
      * Author: TTKien(21/01/2022)
      */
-    onClickShowModalFood()
-    {
+    onClickShowModalFood() {
       this.isShowModal = true;
     },
+    /**
+     * Ẩn modal
+     * Author: TTKien(21/01/2022)
+     */
+    onClickHideModalFood() {
+      this.isShowModal = false;
+    },
+    /**
+     * Chuyển tới trang khi nhập input
+     *  Author: TTKien(21/01/2022)
+     */
+    onChangePageIndex(pageIndex) {
+      this.pageIndex = pageIndex;
+      this.GetFoods();
+    },
+      /**
+     * Chuyển tới trang khi nhập input
+     *  Author: TTKien(21/01/2022)
+     */
+    onChangePageSize(pageSize) {
+      this.pageSize = pageSize;
+      this.GetFoods();
+    },
+    /*================= Events ================== */
     /**
      * Gọi api tìm kiếm theo từ khoá và phân trang.
      * Author: TTKien(20/1/2022)
@@ -206,6 +200,10 @@ export default {
 
   watch: {
     pageIndex() {
+      this.GetFoods();
+    },
+
+    pageSize() {
       this.GetFoods();
     },
   },

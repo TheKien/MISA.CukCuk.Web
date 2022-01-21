@@ -15,9 +15,6 @@
     background-color: #E4F2EA;
     border-color: #0072BC;
 }
-.m-btn:active, .m-btn:focus{
-    background-color: #01B075;
-}
 .m-btn-icon{
     display: flex;
     align-items: center;

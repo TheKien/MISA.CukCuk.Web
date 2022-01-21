@@ -13,6 +13,7 @@ input.m-checkbox:checked{
 
 }
 input.m-checkbox:focus{
+    cursor: pointer;
     -webkit-appearance: none;
 }
 input.m-checkbox:checked:focus{
