@@ -1,0 +1,31 @@
+.m-form-row{
+    margin-bottom: 12px;
+}
+.m-form-group {
+    width: 100%;
+}
+.m-form-lable{
+    display: block;
+    padding-bottom: 3px;
+    font-weight: 700;
+    font-size: 12px;
+}
+.m-form-lable span{
+    color:red;
+}
+.m-form-input{
+    width: 100%;
+    height: 32px;
+    border-radius: 2px;
+    border: 1px solid #babec5;
+    padding: 0 12px;
+}
+.m-form-input:hover {
+    outline: 1px solid #e2e2e2;
+}
+.m-form-input:focus {
+    border-color: #2ca01c;
+}
+.m-form-error {
+    border: 1px solid red !important;
+}

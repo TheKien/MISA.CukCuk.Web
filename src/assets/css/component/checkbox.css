@@ -1,0 +1,23 @@
+input.m-checkbox{
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    /* border: 1px solid #ccc; */
+    background: url(../../images/icon/checkbox.png) 0 0 no-repeat;
+}
+
+input.m-checkbox:checked{
+    cursor: pointer;
+    background: url(../../images/icon/checkbox.png) no-repeat;
+    background-position: 0 -15px;
+
+}
+input.m-checkbox:focus{
+    -webkit-appearance: none;
+}
+input.m-checkbox:checked:focus{
+    cursor: pointer;
+    background: url(../../images/icon/checkbox.png) no-repeat;
+    background-position: -15px -15px;
+
+}
