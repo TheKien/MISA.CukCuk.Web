@@ -82,14 +82,19 @@
         </th>
       </thead>
       <tbody>
-        <tr v-for="food in foodList" :key="food.FoodId">
-          <td style="min-width: 159px">{{ food.FoodCategoryName }}</td>
-          <td style="min-width: 179px">{{ food.FoodCode }}</td>
-          <td style="min-width: 149px">{{ food.FoodName }}</td>
-          <td style="min-width: 149px">{{ food.MenuCategoryName }}</td>
-          <td style="min-width: 89px">{{ food.UnitName }}</td>
+        <tr
+          v-for="f in foodList"
+          :key="f.FoodId"
+          :class="{ 'row-active': f.FoodId == food.FoodId }"
+          @click="onClickRowActive(f)"
+        >
+          <td style="min-width: 159px">{{ f.FoodCategoryName }}</td>
+          <td style="min-width: 179px">{{ f.FoodCode }}</td>
+          <td style="min-width: 149px">{{ f.FoodName }}</td>
+          <td style="min-width: 149px">{{ f.MenuCategoryName }}</td>
+          <td style="min-width: 89px">{{ f.UnitName }}</td>
           <td style="min-width: 99px" class="m-text-right">
-            {{ food.SellingPrice | formatMoney }}
+            {{ f.SellingPrice | formatMoney }}
           </td>
           <td style="min-width: 149px" class="m-text-center">
             <input type="checkbox" class="m-checkbox" disabled />
@@ -101,7 +106,7 @@
           <td style="min-width: 159px" class="m-text-center">
             <input
               type="checkbox"
-              :checked="food.DisplayStatus == 1 ? true : false"
+              :checked="f.DisplayStatus == 1 ? true : false"
               class="m-checkbox"
               disabled
             />
@@ -118,7 +123,7 @@
 import $ from "jquery";
 
 export default {
-  props: ["foodList"],
+  props: ["foodList", "food"],
   data() {
     return {
     };
@@ -127,6 +132,12 @@ export default {
     $("table").on("scroll", function () {
       $("table > *").width($("table").width() + $("table").scrollLeft());
     });
+  },
+
+  methods: {
+    onClickRowActive(food) {
+      this.$emit("onClickRowActive",food)
+    },
   },
 
   filters: {

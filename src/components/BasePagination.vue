@@ -77,7 +77,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
     <div class="m-paging-right">
       Hiển thị {{ pageIndex * pageSize - pageSize + 1 }} -
@@ -149,6 +149,7 @@ export default {
   },
   watch: {
     pageSize() {
+      this.pageNumber = 1;
       this.showDropdownPageSize = false;
     },
   },

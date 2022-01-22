@@ -38,7 +38,11 @@
               Nạp
             </button>
           </div>
-          <food-grid :foodList="foodList"></food-grid>
+          <food-grid
+            :foodList="foodList"
+            :food="food"
+            @onClickRowActive="onClickRowActive"
+          ></food-grid>
         </div>
         <!-- paginate -->
         <base-pagination
@@ -78,7 +82,7 @@ export default {
       /*========================= Paging =========================*/
       /* Số bản ghi trên 1 trang */
       pageSize: 50,
-      listPageSizes:[25,50,100],
+      listPageSizes: [25, 50, 100],
       /* Số trang hiện tại */
       pageIndex: 1,
       /* Tổng số bản ghi */
@@ -109,21 +113,27 @@ export default {
         SellingPrice: null,
         CostPrice: null,
         Description: null,
-        ImageId: null,
+        DisplayStatus: 0,
+        ImageName: null,
         FoodCategoryId: null,
         MenuCategoryId: null,
         UnitId: null,
-        DisplayStatus: null,
-        FoodModifer: [],
-        FoodKitchen: [],
+        UnitName: null,
+        MenuCategoryName: null,
+        FoodCategoryName: null,
+        FoodKitchens: [],
+        FoodModifiers: [],
+        EditMode: 0,
       },
+      foodId: null,
       /* Danh sách món ăn */
       foodList: [],
       /* Form món ăn */
       isShowModal: false,
     };
   },
-  created() {
+
+  mounted() {
     this.GetFoods();
   },
 
@@ -132,7 +142,7 @@ export default {
      * Lấy tất cả dữ liệu
      * Author: TTKien(20/1/2022)
      */
-    GetFoods() {
+      GetFoods() {
       this.callApiGetPaingFilterSort();
     },
     /*================= Events ================== */
@@ -158,13 +168,25 @@ export default {
       this.pageIndex = pageIndex;
       this.GetFoods();
     },
-      /**
+    /**
      * Chuyển tới trang khi nhập input
-     *  Author: TTKien(21/01/2022)
+     * Author: TTKien(21/01/2022)
      */
     onChangePageSize(pageSize) {
       this.pageSize = pageSize;
+      this.pageIndex = 1;
       this.GetFoods();
+    },
+    /**
+     * Chọn 1 đối tượng trong table
+     * Author: TTKien(21/01/2022)
+     */
+    onClickRowActive(food) {
+      this.food = food;
+    },
+
+    resetForm() {
+
     },
     /*================= Events ================== */
     /**
@@ -184,6 +206,7 @@ export default {
         )
         .then((response) => {
           me.foodList = response.data.Data;
+          me.food = this.foodList[0];
           me.totalRecord = response.data.TotalRecord;
           if (response.data) {
             me.totalPage = response.data.TotalPage;

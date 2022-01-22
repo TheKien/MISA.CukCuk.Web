@@ -68,6 +68,7 @@ table .m-filter {
 table.m-table tbody tr:hover {
   background-color: #d7e9f4;
 }
+
 table.m-table td {
   padding: 3px 10px 2.5px !important;
 }
@@ -92,3 +93,6 @@ table.m-table tr:nth-child(2n) {
   width:100%;
   table-layout:fixed;
 } */
+.row-active {
+  background-color: #d7e9f4 !important;
+}
