@@ -19,7 +19,7 @@
         <!-- Input nhập số trang-->
         <div>
           <input
-            type="input"
+            type="number"
             value="1"
             @blur="onChangePageIndex()"
             v-model="pageNumber"

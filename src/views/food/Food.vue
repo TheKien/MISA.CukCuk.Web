@@ -21,15 +21,15 @@
               <i class="mi mi-16 mi-new m-mr-5"></i>
               Thêm
             </button>
-            <button class="m-btn m-btn-icon">
+            <button class="m-btn m-btn-icon" @click="onClickDuplicateFood()">
               <i class="mi mi-16 mi-duplicate m-mr-5"></i>
               Nhân bản
             </button>
-            <button class="m-btn m-btn-icon" @click="onClickUpdateFood">
+            <button class="m-btn m-btn-icon" @click="onClickUpdateFood()">
               <i class="mi mi-16 mi-update m-mr-5"></i>
               Sửa
             </button>
-            <button class="m-btn m-btn-icon">
+            <button class="m-btn m-btn-icon" @click="callApiDeleteFood()">
               <i class="mi mi-16 mi-delete m-mr-5"></i>
               Xóa
             </button>
@@ -42,6 +42,8 @@
             :foodList="foodList"
             :foodId="foodId"
             @onClickRowActive="onClickRowActive"
+            @onChangeInputValue="onChangeInputValue"
+            @onChangeSortObject="onChangeSortObject"
           ></food-grid>
         </div>
         <!-- paginate -->
@@ -98,19 +100,11 @@ export default {
       /* Tổng số trang */
       totalPage: 0,
       /* Đối tượng tìm kiếm */
-      objFilter: {
-        Column: null,
-        Operator: 0,
-        Value: null,
-        ValueType: null,
-      },
+      objFilter: {},
       /* Danh sách đổi tượng tìm kiếm */
       listObjFilters: [],
       /* Đổi tượng sắp xếp */
-      objSort: {
-        Column: null,
-        SortOrder: 0,
-      },
+      objSort: {},
       /*========================= Food =========================*/
 
       foodId: null,
@@ -231,19 +225,82 @@ export default {
         console.log(error);
       }
     },
-
+    /**
+     * Click nut [Nhân bản] trên trang thực đơn
+     * Author: TTKien(23/01/2022)
+     */
+    onClickDuplicateFood() {
+      try {
+        // Api getbyid
+        this.modeBtn = Const.modeBtn.Add;
+        this.callApiGetFoodById();
+        setTimeout(() => {
+          this.onClickShowModalFood();
+        }, 200);
+      } catch (error) {
+        console.log(error);
+      }
+    },
     /**
      * Thay đổi column sắp xếp
      * Author: TTKien(22/01/2022)
      */
-    onChangeSortObject(columnName, sortOrder) {
-      this.objSort.Column = columnName;
-      this.objSort.SortOrder = sortOrder;
+    onChangeSortObject(objSort) {
+      this.objSort = objSort;
       this.getFoods();
     },
     /**
-     * Reset form
-     * Author: TTKien(22/01/2022)
+     * Tìm kiếm
+     * Author: TTKien(23/01/2022)
+     */
+    onChangeInputValue(objFilter) {
+      try {
+        let me = this;
+        // Nếu obj có giá trị rỗng
+        if (objFilter.Value == "" || objFilter.Value == null) {
+          // Neu ds loc khac rong
+          if (me.listObjFilters.length > 0) {
+            // kiem tra xem co trung obj khong
+            for (let i = 0; i < me.listObjFilters.length; i++) {
+              const element = me.listObjFilters[i];
+              // neu trung thi xoa khoi ds loc
+              if (element.Column == objFilter.Column) {
+                me.listObjFilters.splice(i, 1);
+              }
+            }
+          }
+        }
+        // Neu obj co gia tri
+        else {
+          // Neu ds loc rong
+          if (me.listObjFilters.length == 0) me.listObjFilters.push(objFilter);
+          else {
+            // Neu ds loc khac rong
+            // kiem tra trung
+            let i = 0;
+            for (let i = 0; i < me.listObjFilters.length; i++) {
+              const element = me.listObjFilters[i];
+              // neu trung thi sua
+              if (element.Column == objFilter.Column) {
+                element.Value = objFilter.Value;
+                element.Operator = objFilter.Operator;
+                i = i + 1;
+              }
+            }
+            //Neu obj khong co trong ds loc
+            if (i < 1) {
+              me.listObjFilters.push(objFilter);
+            }
+          }
+        }
+        me.getFoods();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    /**
+     * Reset lại form food detail
+     * Author(22/01/2022)
      */
     resetForm() {
       this.food = {
@@ -334,6 +391,21 @@ export default {
       } catch (error) {
         console.log(error);
       }
+    },
+
+    callApiDeleteFood() {
+      api
+        .delete(this.apiRouter, this.foodId)
+        .then((response) => {
+          console.log(response);
+          alert("Xoa ok");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      setTimeout(() => {
+        this.getFoods();
+      }, 10);
     },
   },
 

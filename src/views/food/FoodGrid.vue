@@ -11,39 +11,46 @@
           </div>
         </th>
         <th style="min-width: 179px">
-          <div class="m-th-name">Mã Món</div>
-          <div class="m-filter">
-            <div class="m-cbb-filter"><span>*.</span></div>
-            <input type="text" class="m-input" />
+          <div class="m-th-name" @click="onChangeSortObject('FoodCode')">
+            Mã Món
           </div>
+          <base-input-filter
+            :column="'FoodCode'"
+            :valueType="'String'"
+            @onChangeInputValue="onChangeInputValue"
+          ></base-input-filter>
         </th>
         <th style="min-width: 149px">
-          <div class="m-th-name">Tên Món</div>
-          <div class="m-filter">
-            <div class="m-cbb-filter"><span>*.</span></div>
-            <input type="text" class="m-input" />
-          </div>
+          <div class="m-th-name" @click="onChangeSortObject('FoodName')">Tên Món</div>
+          <base-input-filter
+            :column="'FoodName'"
+            :valueType="'String'"
+            @onChangeInputValue="onChangeInputValue"
+          ></base-input-filter>
         </th>
         <th style="min-width: 149px">
           <div class="m-th-name">Nhóm Thực Đơn</div>
-          <div class="m-filter">
-            <div class="m-cbb-filter"><span>*.</span></div>
-            <input type="text" class="m-input" />
-          </div>
+          <base-input-filter
+            :column="'MenuCategoryName'"
+            :valueType="'String'"
+            @onChangeInputValue="onChangeInputValue"
+          ></base-input-filter>
         </th>
         <th style="min-width: 89px">
           <div class="m-th-name">Đơn vị tính</div>
-          <div class="m-filter">
-            <div class="m-cbb-filter"><span>*.</span></div>
-            <input type="text" class="m-input" />
-          </div>
+          <base-input-filter
+            :column="'UnitName'"
+            :valueType="'String'"
+            @onChangeInputValue="onChangeInputValue"
+          ></base-input-filter>
         </th>
         <th style="min-width: 99px">
           <div class="m-th-name">Giá bán</div>
-          <div class="m-filter">
-            <div class="m-cbb-filter"><span>*.</span></div>
-            <input type="text" class="m-input" />
-          </div>
+          <base-input-filter
+            :column="'SellingPrice'"
+            :valueType="'Int32'"
+            @onChangeInputValue="onChangeInputValue"
+          ></base-input-filter>
         </th>
         <th style="min-width: 149px">
           <div class="m-th-name">Thay đổi theo thời giá</div>
@@ -121,12 +128,16 @@
 </template>
 <script>
 import $ from "jquery";
-import Enum from "../../common/enum"
+import BaseInputFilter from "../../components/BaseInputFilter.vue";
 export default {
+  components: { BaseInputFilter },
   props: ["foodList", "foodId"],
   data() {
     return {
-      sortOrder: Enum.Sort.Asc,
+      sortOrder: false,
+      sortSumitted: false,
+      objSort: {},
+      columnName: null,
     };
   },
   mounted: function () {
@@ -135,6 +146,7 @@ export default {
         $("table.m-table").width() + $("table.m-table").scrollLeft()
       );
     });
+    this.sortSumitted= false;
   },
 
   methods: {
@@ -147,12 +159,23 @@ export default {
     },
     /**
      * Click column để sắP xếp
+     * Author: TTKien(22/01/2021)
      */
-    sorting(columnName, sortOrder) {
-      if(sortOrder==Enum.Sort.Asc){
-        this.sortOrder = Enum.Sort.Desc;
-      }
-      this.$emit("onChangeSortObject", [columnName, sortOrder]);
+    onChangeSortObject(columnName) {
+      this.sortSumitted = true;
+      this.sortOrder = !this.sortOrder;
+      this.objSort = {
+        Column: columnName,
+        SortOrder: this.sortOrder == true ? 0 : 1,
+      };
+      this.$emit("onChangeSortObject", this.objSort);
+    },
+    /**
+     * Thay đổi giá trị tìm kiếm
+     * Author: TTKien(23/01/2021)
+     */
+    onChangeInputValue(objFilter) {
+      this.$emit("onChangeInputValue", objFilter);
     },
   },
 
@@ -164,6 +187,11 @@ export default {
     formatMoney(value) {
       let val = (value / 1).toFixed(0).replace(".", ",");
       return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+  },
+  watch: {
+    "objSort.Column"() {
+      this.sortOrder = false;
     },
   },
 };

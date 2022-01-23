@@ -38,6 +38,7 @@ table.m-table th {
   top: 28px;
   background-color: #ededed;
   width: 200px;
+  
   /* height: 55px !important; */
 }
 table th .m-th-name {
@@ -95,4 +96,8 @@ table.m-table tr:nth-child(2n) {
 } */
 .row-active {
   background-color: #d7e9f4 !important;
+}
+.m-th-name:hover{
+  background-color: #eef6fb;
+  cursor: pointer;
 }

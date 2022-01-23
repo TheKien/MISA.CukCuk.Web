@@ -376,3 +376,12 @@
   border-radius: 4px;
 
 }
+/* FILTER */
+.m-cbb-filter .v-select.m-modal-col-6.vs--single.vs--searchable{
+  width: 24px !important;
+  background-color: #fff;
+}
+.m-cbb-filter .vs__dropdown-menu
+{
+  width: 170px;
+}
