@@ -78,7 +78,7 @@
   height: 24px;
 }
 .vs__actions {
-  background: url(../../resource/trigger_gray.png) no-repeat;
+  background: url(../../images/icon/trigger_gray.png) no-repeat;
   background-position: 0 center;
   width: 22px;
   display: flex;
@@ -126,7 +126,7 @@
   padding: 5px 0;
   margin: 0;
   width: 100%;
-  max-height: 350px;
+  max-height: 200px;
   min-width: 160px;
   overflow-y: auto;
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.15);
@@ -362,4 +362,17 @@
   width: 22px;
   background-color: #005082 !important;
   border: unset;
+}
+
+/* Combobox Mutilple*/
+.v-select.vs--multiple.vs--searchable{
+  height: 28px;
+}
+.vs--multiple .vs__selected{
+  height: 20px;
+  margin: 3px;
+  padding: 0 5px;
+  font-size: 12px;
+  border-radius: 4px;
+
 }

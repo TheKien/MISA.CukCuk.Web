@@ -18,8 +18,8 @@ class ApiService {
    * @returns Bản ghi cần lấy
    * Author: TTKien(6/12/2021)
    */
-  getId(id) {
-    return http.get(`${this.apiRouter}/${id}`);
+  getId(apiRouter,id) {
+    return http.get(`${apiRouter}/${id}`);
   }
 
   /**

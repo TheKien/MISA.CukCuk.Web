@@ -42,7 +42,7 @@
           :class="{ 'm-disable': pageIndex == totalPage }"
         ></div>
         <div class="m-text-paging">|</div>
-        <div class="mi-16 mi-page-refresh"></div>
+        <div class="mi-16 mi-page-refresh" @click="onClickRefresh()"></div>
         <div class="m-text-paging">|</div>
       </div>
       <div class="m-chosse-size m-flex-item-center" :class="{
@@ -146,6 +146,14 @@ export default {
     onChangePageSize(pageSize) {
       this.$emit("onChangePageSize", pageSize);
     },
+    /**
+     * Nút tải lại trang
+     * Author: TTKien(22/01/2022)
+     */
+    onClickRefresh()
+    {
+      this.$emit("refresh");
+    }
   },
   watch: {
     pageSize() {

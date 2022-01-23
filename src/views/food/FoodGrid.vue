@@ -85,8 +85,8 @@
         <tr
           v-for="f in foodList"
           :key="f.FoodId"
-          :class="{ 'row-active': f.FoodId == food.FoodId }"
-          @click="onClickRowActive(f)"
+          :class="{ 'row-active': f.FoodId == foodId }"
+          @click="onClickRowActive(f.FoodId)"
         >
           <td style="min-width: 159px">{{ f.FoodCategoryName }}</td>
           <td style="min-width: 179px">{{ f.FoodCode }}</td>
@@ -121,22 +121,38 @@
 </template>
 <script>
 import $ from "jquery";
-
+import Enum from "../../common/enum"
 export default {
-  props: ["foodList", "food"],
+  props: ["foodList", "foodId"],
   data() {
     return {
+      sortOrder: Enum.Sort.Asc,
     };
   },
   mounted: function () {
-    $("table").on("scroll", function () {
-      $("table > *").width($("table").width() + $("table").scrollLeft());
+    $("table.m-table").on("scroll", function () {
+      $("table.m-table> *").width(
+        $("table.m-table").width() + $("table.m-table").scrollLeft()
+      );
     });
   },
 
   methods: {
-    onClickRowActive(food) {
-      this.$emit("onClickRowActive",food)
+    /**
+     * Click 1 dòng để chọn
+     * Author: TTKien(22/01/2021)
+     */
+    onClickRowActive(foodId) {
+      this.$emit("onClickRowActive", foodId);
+    },
+    /**
+     * Click column để sắP xếp
+     */
+    sorting(columnName, sortOrder) {
+      if(sortOrder==Enum.Sort.Asc){
+        this.sortOrder = Enum.Sort.Desc;
+      }
+      this.$emit("onChangeSortObject", [columnName, sortOrder]);
     },
   },
 

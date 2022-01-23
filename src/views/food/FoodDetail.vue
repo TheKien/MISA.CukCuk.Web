@@ -37,73 +37,164 @@
               v-show="tabIndex == 0"
             >
               <div style="width: 506px">
+                <!-- Food Name -->
                 <div class="m-row m-pr-20">
                   <div class="m-modal-col-3">Tên món <span>(*)</span></div>
                   <div class="m-modal-col-9 m-flex-item-center">
-                    <input type="text" class="m-input m-input-error" />
-                    <div class="mi-16 mi-warning"></div>
+                    <input
+                      type="text"
+                      class="m-input"
+                      ref="txtFoodName"
+                      v-model="food.FoodName"
+                      :class="{
+                        'm-input-error': submitted && $v.food.FoodName.$error,
+                      }"
+                      @blur="getFoodCode(food.FoodName)"
+                    />
+                    <div
+                      class="mi-16 mi-warning"
+                      v-show="submitted && $v.food.FoodName.$error"
+                      title="Trường này không được để trống."
+                    ></div>
                   </div>
                 </div>
+                <!-- Food Code -->
                 <div class="m-row">
                   <div class="m-modal-col-3">Mã món <span>(*)</span></div>
                   <div class="m-modal-col-9 m-flex-item-center">
-                    <input type="text" class="m-input" />
+                    <input
+                      type="text"
+                      class="m-input"
+                      ref="txtFoodCode"
+                      v-model="food.FoodCode"
+                      :class="{
+                        'm-input-error': submitted && $v.food.FoodCode.$error,
+                      }"
+                    />
+                    <div
+                      class="mi-16 mi-warning"
+                      v-show="submitted && !$v.food.FoodCode.maxLength"
+                      title="Trường này tối đa 25 kí tự."
+                    ></div>
+                    <div
+                      class="mi-16 mi-warning"
+                      v-show="submitted && !$v.food.FoodCode.required"
+                      title="Trường này không được bỏ trống."
+                    ></div>
                   </div>
                 </div>
-                <div class="m-row">
-                  <div class="m-modal-col-3">Thứ tự món <span>(*)</span></div>
-                  <div class="m-modal-col-9">
-                    <input type="text" class="m-input m-modal-col-6" />
-                  </div>
-                </div>
+                <!-- Menu Category -->
                 <div class="m-row">
                   <div class="m-modal-col-3">Nhóm thực đơn</div>
-                  <div class="m-modal-col-9 m-row-inner">
-                    <input type="text" class="m-input" />
+                  <div class="m-modal-col-9">
+                    <v-select
+                      :options="menuCategorys"
+                      :reduce="
+                        (MenuCategoryName) => MenuCategoryName.MenuCategoryId
+                      "
+                      v-model="food.MenuCategoryId"
+                      label="MenuCategoryName"
+                    ></v-select>
                   </div>
                 </div>
+                <!-- Unit -->
+                <div class="m-row">
+                  <div class="m-modal-col-3">Đơn vị tính <span>(*)</span></div>
+                  <div class="m-modal-col-9 m-flex-item-center">
+                    <v-select
+                      style="flex: 1"
+                      :options="units"
+                      :reduce="(UnitName) => UnitName.UnitId"
+                      v-model="food.UnitId"
+                      label="UnitName"
+                      :class="{
+                        'm-input-error': submitted && $v.food.UnitId.$error,
+                      }"
+                    ></v-select>
+                    <div
+                      class="mi-16 mi-warning"
+                      v-show="submitted && $v.food.UnitId.$error"
+                      title="Trường này không được để trống."
+                    ></div>
+                  </div>
+                </div>
+                <!-- Selling Price -->
                 <div class="m-row">
                   <div class="m-modal-col-3">Giá bán <span>(*)</span></div>
-                  <div class="m-modal-col-3">
+                  <div class="m-modal-col-4 m-flex-item-center">
                     <input
                       type="text"
-                      value="0,00"
                       style="text-align: right"
                       class="m-input"
+                      ref="txtSellingPrice"
+                      v-mask="'###.###.###.###.###'"
+                      v-model="food.SellingPrice"
+                      :class="{
+                        'm-input-error':
+                          submitted && $v.food.SellingPrice.$error,
+                      }"
                     />
+                    <div
+                      class="mi-16 mi-warning"
+                      v-show="submitted && $v.food.SellingPrice.$error"
+                      title="Trường này không được để trống."
+                    ></div>
                   </div>
                 </div>
+                <!-- CostPrice -->
                 <div class="m-row">
                   <div class="m-modal-col-3">Giá vốn</div>
-                  <div class="m-modal-col-3">
+                  <div class="m-modal-col-4">
                     <input
                       type="text"
                       value="0,00"
                       style="text-align: right"
                       class="m-input"
+                      v-mask="'###.###.###.###.###'"
+                      v-model="food.CostPrice"
                     />
                   </div>
                 </div>
+                <!-- Description -->
                 <div class="m-modal-group m-row m-textarea">
                   <div class="m-modal-col-3">Mô tả</div>
                   <div class="m-modal-col-9">
-                    <textarea rows="3"></textarea>
+                    <textarea rows="3" v-model="food.Description"></textarea>
                   </div>
                 </div>
+                <!-- Kitchen -->
                 <div class="m-row">
                   <div class="m-modal-col-3">Chế biện tại</div>
                   <div class="m-modal-col-9">
-                    <input type="text" class="m-input" />
+                    <!-- <input
+                      type="text"
+                      class="m-input"
+                      v-model="food.FoodKitchens"
+                    /> -->
+                    <v-select
+                      multiple
+                      v-model="foodKitchens"
+                      :reduce="(KitchenName) => KitchenName.KitchenId"
+                      label="KitchenName"
+                      :options="kitchens"
+                    />
                   </div>
                 </div>
+                <!-- DisplayStatus -->
                 <div class="m-row">
                   <div class="m-modal-col-3"></div>
                   <div class="m-modal-col-9 m-flex">
-                    <input type="checkbox" class="m-checkbox" />
-                    <div class="m-modal-10">Hiển thị trên thực đơn</div>
+                    <input
+                      type="checkbox"
+                      class="m-checkbox"
+                      value="0"
+                      v-model="displayStatus"
+                    />
+                    <div class="m-modal-10">Không hiển thị trên thực đơn</div>
                   </div>
                 </div>
               </div>
+              <!-- Image -->
               <div class="m-photo">
                 <legend>Ảnh đại diện</legend>
                 <div class="m-flex">
@@ -124,83 +215,115 @@
                 </div>
               </div>
             </div>
-            <!-- Sở thích phục vụ -->
-            <div v-show="tabIndex == 1">
-              <div class="m-modal-grid-view">
-                <div>Món ăn:</div>
-                <div class="m-flex" style="margin: 8px 0">
-                  <div class="mi-32 mi-info"></div>
-                  <div class="m-modal-info">
-                    Ghi lại các sở thích của khách hàng giúp nhân viên phục vụ
-                    chọn nhanh order.<br />
-                    VD: không cay/ít hành/thêm phomai...
-                  </div>
+            <!-- Food Modifier -->
+            <div v-show="tabIndex == 1" style="margin: 0 8px">
+              <div>Món ăn:</div>
+              <div class="m-flex" style="margin: 8px 0">
+                <div class="mi-32 mi-info"></div>
+                <div class="m-modal-info">
+                  Ghi lại các sở thích của khách hàng giúp nhân viên phục vụ
+                  chọn nhanh order.<br />
+                  VD: không cay/ít hành/thêm phomai...
                 </div>
+              </div>
 
+              <div class="m-modal-grid-view">
                 <table class="m-modal-table">
                   <thead>
                     <tr>
-                      <th>Sở thích phục vụ</th>
-                      <th>Thu thêm</th>
+                      <th style="width: 50%; position: sticky; top: -1px">
+                        Sở thích phục vụ
+                      </th>
+                      <th style="width: 20%; position: sticky; top: -1px">
+                        Thu thêm
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(row, index) in modifiers" :key="index">
+                    <tr v-for="(fm, index) in foodModifiers" :key="index">
                       <td>
-                        <input
-                          type="text"
-                          class="m-input"
-                          v-model="row.ModifierName"
-                        />
+                        <v-select
+                          style="flex: 1"
+                          v-model="fm.ModifierId"
+                          :options="modifiers"
+                          :reduce="(ModifierName) => ModifierName.ModifierId"
+                          label="ModifierName"
+                          @input="
+                            fm.AdditionalCharge = modifiers.find(
+                              (x) => x.ModifierId == fm.ModifierId
+                            ).AdditionalCharge
+                          "
+                        ></v-select>
                       </td>
                       <td>
                         <input
                           type="text"
-                          class="m-input"
-                          v-model="row.AdditionalCharge"
+                          class="m-input m-text-right"
+                          v-mask="'###.###.###.###.###'"
+                          v-model="fm.AdditionalCharge"
                         />
                       </td>
                     </tr>
                   </tbody>
                 </table>
-                <div class="m-end-tab">
-                  <button
-                    class="m-btn m-btn-icon m-mr-5"
-                    @click="onClickAddRow()"
-                  >
-                    <i class="mi mi-16 mi-new m-mr-8"></i>
-                    Thêm dòng
-                  </button>
-                  <button class="m-btn m-btn-icon">
-                    <i class="mi mi-16 mi-delete m-mr-8"></i>
-                    Xóa dòng
-                  </button>
-                </div>
+              </div>
+              <div class="m-end-tab">
+                <button
+                  class="m-btn m-btn-icon m-mr-5"
+                  @click="onClickAddRow()"
+                >
+                  <i class="mi mi-16 mi-new m-mr-8"></i>
+                  Thêm dòng
+                </button>
+                <button
+                  class="m-btn m-btn-icon"
+                  @click="onClickRemoveRow(index)"
+                >
+                  <i class="mi mi-16 mi-delete m-mr-8"></i>
+                  Xóa dòng
+                </button>
               </div>
             </div>
+            <!-- End Food Modifier  -->
           </div>
+
+          <!-- Modal footer -->
           <div class="m-modal-footer">
             <div class="m-footer-left">
-              <button class="m-btn m -btn-icon">
+              <button class="m-btn m-btn-icon" title="F1">
                 <i class="mi mi-16 mi-help m-mr-8"></i>
                 Giúp
               </button>
             </div>
             <div class="m-footer-right">
-              <button class="m-btn m-btn-icon m-mr-8">
+              <button
+                class="m-btn m-btn-icon m-mr-8"
+                title="Ctrl + S"
+                @click="onClickSave(0)"
+              >
                 <i class="mi-16 mi-save m-mr-8"></i>
                 Cất
               </button>
-              <button class="m-btn m-btn-icon m-mr-8">
+              <button
+                class="m-btn m-btn-icon m-mr-8"
+                title="Ctrl + Shift + S"
+                @click="onClickSave(1)"
+              >
                 <i class="mi-16 mi-save-add m-mr-8"></i>
                 Cất và thêm
               </button>
-              <button class="m-btn m-btn-icon" @click="onClickClose()">
+              <button
+                class="m-btn m-btn-icon"
+                @click="onClickClose()"
+                title="Ctrl + B"
+              >
                 <i class="mi-16 mi-cancel m-mr-8"></i>
                 Hủy bỏ
               </button>
             </div>
           </div>
+          <!-- End modal footer -->
+
           <!-- </form> -->
         </div>
         <div class="modal-background"></div>
@@ -210,41 +333,460 @@
 </template>
 
 <script>
+import api from "../../apis/ApiService";
+import { required, maxLength } from "vuelidate/lib/validators";
+import Const from "../../common/const";
 export default {
-  props: ["isShowModal"],
-  created: function () {},
-
+  props: ["isShowModal", "food", "modeBtn"],
   data() {
     return {
+      apiRouter: "Foods",
       /**
        * tab hiện tại 0 - thông tin chung, 1 - sở thích phụ vụ
        */
       tabIndex: 0,
+      /* true - Bắt validate, flase - không bắt validate */
+      submitted: false,
       /* Đối tượng sở thích phục vụ */
-      modifier: {
-        ModifierName: null,
-        ModifierId: null,
-        AdditionalCharge: null,
-      },
+      foodModifiers: [],
+      /* Danh sách bếp chọn trong select mutilple */
+      foodKitchens: [],
+      /* Trạng thái hiển thị của món ăn */
+      displayStatus: false,
       /* List danh sách sở thích phục vụ */
-      modifiers: [
-        // {
-        //   ModifierName: "Thêm đường",
-        //   ModifierId: "Thêm đường",
-        //   AdditionalCharge: 1234556,
-        // },
-      ],
-      
+      modifiers: [],
+      /* List danh sách đơn vị tính*/
+      units: [],
+      /* List danh sách bếp chế biến */
+      kitchens: [],
+      /* List danh sách nhóm */
+      menuCategorys: [],
+      btn: 0,
     };
   },
+
   methods: {
+    /**
+     * Lấy tất cả đơn vị tính
+     * Author: TTKien(22/01/2022)
+     */
+    getUnits() {
+      let me = this;
+      api
+        .get(`Units`)
+        .then((response) => {
+          me.units = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    /**
+     * Lấy tất cả sở thích phục vụ
+     * Author: TTKien(22/01/2022)
+     */
+    getModifiers() {
+      let me = this;
+      api
+        .get(`Modifiers`)
+        .then((response) => {
+          me.modifiers = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    /**
+     * Lấy tất cả nhóm thực đơn
+     * Author: TTKien(22/01/2022)
+     */
+    getMenuCategorys() {
+      let me = this;
+      api
+        .get(`MenuCategorys`)
+        .then((response) => {
+          me.menuCategorys = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    /**
+     * Lấy tất cả bếp chế biến
+     * Author: TTKien(22/01/2022)
+     */
+    getKitchens() {
+      let me = this;
+      api
+        .get(`Kitchens`)
+        .then((response) => {
+          me.kitchens = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    /**
+     * Click nút [Huỷ]
+     * Author: TTKien(22/01/2022)
+     */
     onClickClose() {
       this.$emit("onClickClose");
     },
+    /**
+     * Click nút [Cất] hoặc [Cất & thêm]
+     */
+    onClickSave(btn) {
+      try {
+        this.submitted = true;
+        this.btn = btn;
+        // convert giá về int
+        if (this.food.SellingPrice)
+          this.food.SellingPrice = this.convertMoneyToInt(
+            this.food.SellingPrice
+          );
+        if (this.food.CostPrice)
+          this.food.CostPrice = this.convertMoneyToInt(this.food.CostPrice);
+        // Chuyển trạng thái false = 1 (hiển thị), true = 0 (không hiển thị)
+        this.food.DisplayStatus = this.food.DisplayStatus == true ? 0 : 1;
 
-    onClickAddRow() {
-      this.modifiers.push(this.modifier);
+        if (this.modeBtn == Const.modeBtn.Add) {
+          // Convert list id thành list obj kitchenId
+          for (const kitchenId in this.foodKitchens) {
+            const element = this.foodKitchens[kitchenId];
+            let objKitchenId = { KitchenId: element };
+            this.food.FoodKitchens.push(objKitchenId);
+          }
+          // Lấy danh sách sở thích của món ăn. loại bỏ những cái chưa chọn
+          this.food.FoodModifiers = this.foodModifiers.filter(
+            (x) => x.ModifierId != null
+          );
+        } else {
+          // Lấy danh sách thay đổi bếp chế biến có edit mode
+          this.food.FoodKitchens = this.compareTwoArrayKitchen(
+            this.food.FoodKitchens,
+            this.foodKitchens
+          );
+          // Lấy danh sách thay đổi sở thích phục vu có edit mode
+          this.foodModifiers = this.foodModifiers.filter(
+            (x) => x.ModifierId != null
+          );
+          this.food.FoodModifiers = this.compareTwoArrayModifier(
+            this.food.FoodModifiers,
+            this.foodModifiers
+          );
+          console.log(this.food.FoodKitchens);
+        }
+        this.$v.$touch();
+        // Nếu form error
+        if (this.$v.$invalid) {
+          // Tên món ăn rỗng
+          if (this.$v.food.FoodName.$error) {
+            setTimeout(() => {
+              this.$refs.txtFoodName.focus();
+            }, 0);
+            return;
+          }
+          // Mã món ăn rỗng hoặc quá 25 kí tự
+          if (this.$v.food.FoodCode.$error) {
+            setTimeout(() => {
+              this.$refs.txtFoodCode.focus();
+            }, 10);
+            return;
+          }
+          // K chọn đơn vị tính
+          if (this.$v.food.UnitId.$error) {
+            return;
+          }
+          // Giá bán rỗng
+          if (this.$v.food.SellingPrice.$error) {
+            setTimeout(() => {
+              this.$refs.txtSellingPrice.focus();
+            }, 10);
+            return;
+          }
+        } else {
+          if (this.modeBtn == Const.modeBtn.Add) {
+            this.callApiCreateFood();
+          } else {
+            // UPDATE
+            this.callApiUpdateFood();
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
     },
+    /**
+     * So sánh 2 mảng trả về mảng mới kèm thuộc tính edit mode.
+     * Author: TTKien(23/01/2022)
+     */
+    compareTwoArrayKitchen(arrOld, arrNew) {
+      let res = [];
+      let arrDel = [];
+      let arrAdd = [];
+      // Lấy ra các đối tượng xoá - Có trong mảng cũ nhưng không có trong mảng mới
+      arrDel = arrOld.filter(function (v) {
+        return arrNew.every((n) => JSON.stringify(n) !== JSON.stringify(v));
+      });
+      // Lấy ra các đối tượng Thêm - Không có trong mảng cũ nhưng có trong mảng mới
+      arrAdd = arrNew.filter(function (v) {
+        return arrOld.every((n) => JSON.stringify(n) !== JSON.stringify(v));
+      });
+
+      // Thêm edit mode: 1 - Thêm, 3 - Xoá
+      for (const objDel in arrDel) {
+        if (Object.hasOwnProperty.call(arrDel, objDel)) {
+          const element = arrDel[objDel];
+          res.push({ KitchenId: element, EditMode: 3 });
+        }
+      }
+      for (const objAdd in arrAdd) {
+        if (Object.hasOwnProperty.call(arrAdd, objAdd)) {
+          const element = arrAdd[objAdd];
+          res.push({ KitchenId: element, EditMode: 1 });
+        }
+      }
+      return res;
+    },
+    /**
+     * So sánh 2 mảng trả về mảng mới kèm thuộc tính edit mode.
+     * Author: TTKien(23/01/2022)
+     */
+    compareTwoArrayModifier(arrOld, arrNew) {
+      let res = [];
+      let arrDel = [];
+      let arrAdd = [];
+      let foodModifiers = [];
+      for (const fm in arrOld) {
+        const element = arrOld[fm];
+        let foodModifer = {
+          ModifierId: element.ModifierId,
+          AdditionalCharge: element.AdditionalCharge,
+        };
+        foodModifiers.push(foodModifer);
+      }
+      arrOld = foodModifiers;
+      for (const fm in arrNew) {
+        const element = arrNew[fm];
+        arrNew[fm].AdditionalCharge = this.convertMoneyToInt(
+          element.AdditionalCharge
+        );
+      }
+      // Lấy ra các đối tượng xoá - Có trong mảng cũ nhưng không có trong mảng mới
+      arrDel = arrOld.filter(function (v) {
+        return arrNew.every((n) => JSON.stringify(n) !== JSON.stringify(v));
+      });
+      // Lấy ra các đối tượng Thêm - Không có trong mảng cũ nhưng có trong mảng mới
+      arrAdd = arrNew.filter(function (v) {
+        return arrOld.every((n) => JSON.stringify(n) !== JSON.stringify(v));
+      });
+
+      // Thêm edit mode: 1 - Thêm, 3 - Xoá, 2 - Sửa
+      for (const objDel in arrDel) {
+        if (Object.hasOwnProperty.call(arrDel, objDel)) {
+          const element = arrDel[objDel];
+          res.push({
+            ModifierId: element.ModifierId,
+            AdditionalCharge: Number.parseInt(element.AdditionalCharge),
+            EditMode: 3,
+          });
+        }
+      }
+      for (const objAdd in arrAdd) {
+        if (Object.hasOwnProperty.call(arrAdd, objAdd)) {
+          const element = arrAdd[objAdd];
+          res.push({
+            ModifierId: element.ModifierId,
+            AdditionalCharge: Number.parseInt(element.AdditionalCharge),
+            EditMode: 1,
+          });
+        }
+      }
+      return res;
+    },
+    /**
+     * Gọi api thêm mới món ăn
+     * Author: TTKien(22/01/2022)
+     */
+    callApiCreateFood() {
+      const me = this;
+      api
+        .create(me.apiRouter, me.food)
+        .then(() => {
+          me.$emit("getFoods");
+          // Select button 'cất '
+          if (me.btn == Const.btn.Save) {
+            // Hide modal
+            me.onClickClose();
+          } else {
+            //'cất và thêm'
+            // Reset Form
+            me.foodModifiers = [];
+            me.$emit("resetForm");
+            setTimeout(() => {
+              me.submitted = false;
+            }, 0);
+          }
+        })
+        .catch(function (res) {
+          console.log(res.response);
+        });
+    },
+    /**
+     * Gọi api thêm mới món ăn
+     * Author: TTKien(22/01/2022)
+     */
+    callApiUpdateFood() {
+      const me = this;
+      api
+        .update(me.apiRouter, me.food.FoodId, me.food)
+        .then(() => {
+          me.$emit("getFoods");
+          // Select button 'cất '
+          if (me.btn == Const.btn.Save) {
+            // Hide modal
+            me.onClickClose();
+          } else {
+            //'cất và thêm'
+            // Reset Form
+            me.submitted = false;
+            me.foodModifiers = [];
+            me.$emit("resetForm");
+            setTimeout(() => {
+              me.$refs.txtFoodName.focus();
+            }, 10);
+          }
+        })
+        .catch(function (res) {
+          console.log(res.response);
+        });
+    },
+    /**
+     * Khi click button Thêm dòng
+     * Author: TTKien (21/1/2022)
+     */
+    onClickAddRow() {
+      let con = {
+        ModifierId: null,
+        AdditionalCharge: 0,
+      };
+      this.foodModifiers.push(con);
+    },
+
+    onClickRemoveRow(index) {
+      this.foodModifier.splice(index, 1);
+    },
+    /**
+     * Lấy mã món ăn theo tên món ăn
+     * Author: TTKien(22/01/2022)
+     */
+    getFoodCode(foodName) {
+      if (foodName == null) {
+        return;
+      }
+      let str = this.convertStringToCode(foodName);
+      // Cắt bỏ khoảng trắng
+      this.food.FoodCode = str;
+      if (str.length > 25) {
+        let str2 = foodName;
+        str2 = str2.match(/\b(\w)/g);
+        str2 = str2.join("").toUpperCase();
+        str2 = str2.slice(0, 25);
+        this.food.FoodCode = str2;
+      }
+    },
+    /**
+     * Chuyển chuỗi string thành code VD: Sườn Xào => SUONXAO
+     * Author: TTKien(21/01/2022)
+     */
+    convertStringToCode(str) {
+      //Loại bỏ dấu tiếng việt
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+      str = str.replace(/đ/g, "d");
+      str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+      str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+      str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+      str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+      str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+      str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+      str = str.replace(/Đ/g, "D");
+      // Loại bỏ kí tự đặc biệt
+      str = str.replace(/[^\w\s]/gi, "");
+      // Loại bỏ khoẳng trắng
+      str = str.toUpperCase().split(" ").join("");
+      return str;
+    },
+    /**
+     * Chuyển tiền thành số VD: 2.000.000 => 2000000
+     * Author: TTKien(22/01/2022)
+     */
+    convertMoneyToInt(money) {
+      if (money == null || money.split(" ").join("") == "") return 0;
+      if (money != 0) {
+        money = money.split(".").join("");
+        return Number.parseInt(money);
+      }
+    },
+  },
+
+  /**
+   * Validate dữ liệu
+   * Author(22/01/2022)
+   */
+  validations: {
+    food: {
+      FoodCode: { required, maxLength: maxLength(25) },
+      FoodName: { required },
+      UnitId: { required },
+      SellingPrice: { required },
+    },
+  },
+
+  mounted() {
+    this.getUnits();
+    this.getKitchens();
+    this.getModifiers();
+    this.getMenuCategorys();
+  },
+
+  watch: {
+    isShowModal() {
+      this.tabIndex = 0;
+      this.submitted = false;
+      if (this.modeBtn == Const.modeBtn.Update) {
+        this.foodKitchens = this.food.FoodKitchens;
+        let foodModifiers = [];
+        for (const fm in this.food.FoodModifiers) {
+          const element = this.food.FoodModifiers[fm];
+          let foodModifer = {
+            ModifierId: element.ModifierId,
+            AdditionalCharge: element.AdditionalCharge,
+          };
+          foodModifiers.push(foodModifer);
+        }
+        this.foodModifiers = foodModifiers;
+      } else {
+        this.foodKitchens = [];
+        this.foodModifiers = [];
+      }
+
+      setTimeout(() => {
+        this.$refs.txtFoodName.focus();
+      }, 10);
+    },
+    tabIndex()
+    {
+      if(this.foodModifiers.length == 0) this.onClickAddRow();
+      setTimeout(() => {
+        this.$refs.txtFoodName.focus();
+      }, 10);
+    }
   },
 };
 </script>

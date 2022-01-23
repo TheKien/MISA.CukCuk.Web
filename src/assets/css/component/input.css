@@ -11,8 +11,8 @@
     color: #bbbbbb;
 }
 .m-input:focus{
-    border-color: #0072BC;
+    border-color: #0072BC !important;
 }
 .m-input-error{
-    border-color: #cf4c35;
+    border-color: #cf4c35 !important;
 }

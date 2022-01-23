@@ -17,7 +17,7 @@
         <!-- Content main -->
         <div class="m-content-main">
           <div class="m-toolbar">
-            <button class="m-btn m-btn-icon" @click="onClickShowModalFood">
+            <button class="m-btn m-btn-icon" @click="onClickAddFood()">
               <i class="mi mi-16 mi-new m-mr-5"></i>
               Thêm
             </button>
@@ -25,7 +25,7 @@
               <i class="mi mi-16 mi-duplicate m-mr-5"></i>
               Nhân bản
             </button>
-            <button class="m-btn m-btn-icon">
+            <button class="m-btn m-btn-icon" @click="onClickUpdateFood">
               <i class="mi mi-16 mi-update m-mr-5"></i>
               Sửa
             </button>
@@ -33,14 +33,14 @@
               <i class="mi mi-16 mi-delete m-mr-5"></i>
               Xóa
             </button>
-            <button class="m-btn m-btn-icon">
+            <button class="m-btn m-btn-icon" @click="getFoods()">
               <i class="mi mi-16 mi-refresh m-mr-5"></i>
               Nạp
             </button>
           </div>
           <food-grid
             :foodList="foodList"
-            :food="food"
+            :foodId="foodId"
             @onClickRowActive="onClickRowActive"
           ></food-grid>
         </div>
@@ -51,8 +51,10 @@
           :totalRecord="totalRecord"
           :totalPage="totalPage"
           :listPageSizes="listPageSizes"
+          @refresh="getFoods"
           @onChangePageIndex="onChangePageIndex"
           @onChangePageSize="onChangePageSize"
+          @onChangeSortObject="onChangeSortObject"
         ></base-pagination>
         <!-- end paginate -->
         <!-- end content main -->
@@ -61,7 +63,11 @@
     </div>
     <food-detail
       :isShowModal="isShowModal"
+      :food="food"
+      :modeBtn="modeBtn"
+      @getFoods="getFoods"
       @onClickClose="onClickHideModalFood"
+      @resetForm="resetForm"
     ></food-detail>
   </div>
 </template>
@@ -70,6 +76,8 @@ import api from "../../apis/ApiService";
 import BasePagination from "../../components/BasePagination.vue";
 import FoodDetail from "./FoodDetail.vue";
 import FoodGrid from "./FoodGrid.vue";
+import Const from "../../common/const";
+
 // import Filters from "../../common/filters";
 export default {
   components: { FoodGrid, FoodDetail, BasePagination },
@@ -104,6 +112,10 @@ export default {
         SortOrder: 0,
       },
       /*========================= Food =========================*/
+
+      foodId: null,
+      /* Danh sách món ăn */
+      foodList: [],
       /* Đối tượng món ăn */
       food: {
         FoodId: null,
@@ -113,7 +125,7 @@ export default {
         SellingPrice: null,
         CostPrice: null,
         Description: null,
-        DisplayStatus: 0,
+        DisplayStatus: true,
         ImageName: null,
         FoodCategoryId: null,
         MenuCategoryId: null,
@@ -125,16 +137,14 @@ export default {
         FoodModifiers: [],
         EditMode: 0,
       },
-      foodId: null,
-      /* Danh sách món ăn */
-      foodList: [],
       /* Form món ăn */
       isShowModal: false,
+      modeBtn: 0,
     };
   },
 
   mounted() {
-    this.GetFoods();
+    this.getFoods();
   },
 
   methods: {
@@ -142,10 +152,11 @@ export default {
      * Lấy tất cả dữ liệu
      * Author: TTKien(20/1/2022)
      */
-      GetFoods() {
+    getFoods() {
       this.callApiGetPaingFilterSort();
     },
     /*================= Events ================== */
+
     /**
      * Hiển thị modal
      * Author: TTKien(21/01/2022)
@@ -153,6 +164,7 @@ export default {
     onClickShowModalFood() {
       this.isShowModal = true;
     },
+
     /**
      * Ẩn modal
      * Author: TTKien(21/01/2022)
@@ -160,14 +172,16 @@ export default {
     onClickHideModalFood() {
       this.isShowModal = false;
     },
+
     /**
      * Chuyển tới trang khi nhập input
      *  Author: TTKien(21/01/2022)
      */
     onChangePageIndex(pageIndex) {
       this.pageIndex = pageIndex;
-      this.GetFoods();
+      this.getFoods();
     },
+
     /**
      * Chuyển tới trang khi nhập input
      * Author: TTKien(21/01/2022)
@@ -175,59 +189,161 @@ export default {
     onChangePageSize(pageSize) {
       this.pageSize = pageSize;
       this.pageIndex = 1;
-      this.GetFoods();
+      this.getFoods();
     },
+
     /**
      * Chọn 1 đối tượng trong table
      * Author: TTKien(21/01/2022)
      */
-    onClickRowActive(food) {
-      this.food = food;
+    onClickRowActive(foodId) {
+      this.foodId = foodId;
     },
 
-    resetForm() {
-
-    },
-    /*================= Events ================== */
     /**
-     * Gọi api tìm kiếm theo từ khoá và phân trang.
-     * Author: TTKien(20/1/2022)
+     * Click nut [Thêm] trên trang thực đơn
+     * Author: TTKien(22/01/2022)
      */
-    callApiGetPaingFilterSort() {
-      var me = this;
-      var sort = "";
-      var filters = "";
-      if (this.objSort.Column == null) sort = "";
-      else sort = JSON.stringify(this.objSort);
-      filters = JSON.stringify(this.listObjFilters);
+    onClickAddFood() {
+      try {
+        this.resetForm();
+        this.modeBtn = Const.modeBtn.Add;
+        setTimeout(() => {
+          this.onClickShowModalFood();
+        }, 10);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    /**
+     * Click nut [Sửa] trên trang thực đơn
+     * Author: TTKien(22/01/2022)
+     */
+    onClickUpdateFood() {
+      try {
+        // Api getbyid
+        this.modeBtn = Const.modeBtn.Update;
+        this.callApiGetFoodById();
+        setTimeout(() => {
+          this.onClickShowModalFood();
+        }, 200);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    /**
+     * Thay đổi column sắp xếp
+     * Author: TTKien(22/01/2022)
+     */
+    onChangeSortObject(columnName, sortOrder) {
+      this.objSort.Column = columnName;
+      this.objSort.SortOrder = sortOrder;
+      this.getFoods();
+    },
+    /**
+     * Reset form
+     * Author: TTKien(22/01/2022)
+     */
+    resetForm() {
+      this.food = {
+        FoodId: null,
+        FoodCode: null,
+        FoodName: null,
+        FoodOrder: null,
+        SellingPrice: null,
+        CostPrice: null,
+        Description: null,
+        DisplayStatus: false,
+        ImageName: null,
+        FoodCategoryId: null,
+        MenuCategoryId: null,
+        UnitId: null,
+        UnitName: null,
+        MenuCategoryName: null,
+        FoodCategoryName: null,
+        FoodKitchens: [],
+        FoodModifiers: [],
+        EditMode: 0,
+      };
+    },
+    /*================= Api ================== */
+    /**
+     * Call api lấy món ăn theo id
+     * Author: TTKien(21/01/2022)
+     */
+    callApiGetFoodById() {
+      const me = this;
       api
-        .get(
-          `${this.apiRouter}/PagingFilterSort?pageSize=${this.pageSize}&pageIndex=${this.pageIndex}&objectFilters=${filters}&objectSort=${sort}`
-        )
+        .getId(me.apiRouter, me.foodId)
         .then((response) => {
-          me.foodList = response.data.Data;
-          me.food = this.foodList[0];
-          me.totalRecord = response.data.TotalRecord;
-          if (response.data) {
-            me.totalPage = response.data.TotalPage;
-          } else {
-            me.totalPage = 1;
-            me.totalRecord = 0;
+          me.food = response.data;
+          //
+          let foodKitchens = [];
+          for (const kitchenId in me.food.FoodKitchens) {
+            const element = me.food.FoodKitchens[kitchenId].KitchenId;
+            foodKitchens.push(element);
           }
+          me.food.FoodKitchens = foodKitchens;
+          //
+          // let foodModifiers = [];
+          // for (const fm in me.food.FoodModifiers) {
+          //   const element = me.food.FoodModifiers[fm];
+          //   let foodModifer = {
+          //     ModifierId: element.ModifierId,
+          //     AdditionalCharge: element.AdditionalCharge,
+          //   };
+          //   foodModifiers.push(foodModifer);
+          // }
+          // me.food.FoodModifiers = foodModifiers;
         })
         .catch((e) => {
           console.log(e);
         });
     },
+    /**
+     * Gọi api tìm kiếm theo từ khoá và phân trang.
+     * Author: TTKien(20/1/2022)
+     */
+    callApiGetPaingFilterSort() {
+      try {
+        let me = this;
+        let sort = "";
+        let filters = "";
+        if (this.objSort.Column == null) sort = "";
+        else sort = JSON.stringify(this.objSort);
+        filters = JSON.stringify(this.listObjFilters);
+        api
+          .get(
+            `${this.apiRouter}/PagingFilterSort?pageSize=${this.pageSize}&pageIndex=${this.pageIndex}&objectFilters=${filters}&objectSort=${sort}`
+          )
+          .then((response) => {
+            me.foodList = response.data.Data;
+            me.foodId = this.foodList[0].FoodId;
+            me.totalRecord = response.data.TotalRecord;
+            if (response.data) {
+              me.totalPage = response.data.TotalPage;
+            } else {
+              me.totalPage = 1;
+              me.totalRecord = 0;
+            }
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    },
   },
 
   watch: {
     pageIndex() {
-      this.GetFoods();
+      this.getFoods();
     },
 
     pageSize() {
-      this.GetFoods();
+      this.getFoods();
     },
   },
 };
