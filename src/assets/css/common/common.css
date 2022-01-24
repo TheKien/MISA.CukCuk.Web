@@ -64,3 +64,12 @@ input[type=number] {
     display: flex;
     align-items: center;
 }
+.m-flex-content-center{
+    display: flex;
+    justify-content: center;
+}
+.m-flex-justify-end
+{
+    display: flex;
+    justify-content: end;
+}

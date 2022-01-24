@@ -38,12 +38,12 @@ table.m-table th {
   top: 28px;
   background-color: #ededed;
   width: 200px;
-  
+
   /* height: 55px !important; */
 }
 table th .m-th-name {
   height: 29px !important;
-  padding: 7px 10px;
+  padding: 7px 8px;
   vertical-align: center;
 }
 table .m-filter {
@@ -70,8 +70,11 @@ table.m-table tbody tr:hover {
   background-color: #d7e9f4;
 }
 
-table.m-table td {
+table.m-table  td {
   padding: 3px 10px 2.5px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 table.m-table td,
 th {
@@ -79,7 +82,7 @@ th {
   /* white-space: pre-wrap; */
   border-left: 1px solid;
   border-color: #d9d9d9;
-  min-width: 120px;
+  /* min-width: 120px; */
 }
 table.m-table td,
 th:last-child {
@@ -96,8 +99,16 @@ table.m-table tr:nth-child(2n) {
 } */
 .row-active {
   background-color: #d7e9f4 !important;
+  width: 100%;
 }
-.m-th-name:hover{
+.m-th-name:hover {
   background-color: #eef6fb;
   cursor: pointer;
+}
+.m-loading-table{
+  height: 100%;
+  width: 100%;
+  background-color: #c4c1c1;
+  display: flex;
+  align-items: center;
 }

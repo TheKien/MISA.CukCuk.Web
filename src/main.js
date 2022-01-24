@@ -7,6 +7,7 @@ import vSelect from 'vue-select'
 import Vuelidate from 'vuelidate'
 import VueMask from 'v-mask'
 import { VTooltip } from 'v-tooltip'
+import money from 'v-money'
 
 /* Thư viện tooltip */
 Vue.directive('tooltip', VTooltip)
@@ -18,7 +19,9 @@ Vue.use(Vuelidate)
 /* Thư viện format input */
 Vue.use(VueMask);
 export const eventBus = new Vue()
-
+ 
+// Thư viện convert money
+Vue.use(money, {precision: 4})
 new Vue({
   store,
   router,

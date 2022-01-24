@@ -385,3 +385,7 @@
 {
   width: 170px;
 }
+
+.v-select:focus-within{
+    border-color: #0072BC !important;
+}

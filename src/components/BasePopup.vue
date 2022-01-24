@@ -5,15 +5,11 @@
         <div class="m-flex">
           <div
             class="mi mi-48 mi-exclamation-warning-48"
-            v-if="popup.Status == 'Warning'"
-          ></div>
-          <div
-            class="mi mi-48 mi-exclamation-error-48-2"
-            v-if="popup.Status == 'Danger'"
+            v-if="popup.Status == status.Warning"
           ></div>
           <div
             class="mi mi-48 mi-exclamation-question-48"
-            v-if="popup.Status == 'Question'"
+            v-if="popup.Status == status.Question"
           ></div>
           <!-- Messenger -->
           <div class="m-messenger">{{ popup.Title }}</div>
@@ -21,41 +17,21 @@
         <div class="m-mess-line"></div>
       </div>
       <div class="m-popup-bottom">
-        <div v-if="popup.Status == 'Warning' && popup.Mode < 2" class="m-flex-between">
-          <!-- Button close -->
-          <button class="m-btn m-btn-gray" @click="onClickClose()">
-            Không
-          </button>
-          <!-- Button comfirm -->
-          <button class="m-btn m-btn-success" @click="onClickComfirm()">
-            Có
-          </button>
-        </div>
-        <div v-if="popup.Status == 'Warning' && popup.Mode === 2" class="m-flex-justify-end">
+        <div v-show="popup.Status == status.Warning" class="m-flex-justify-end">
           <!-- Button close -->
           <button class="m-btn m-btn-success" @click="onClickClose()">
             Đồng ý
           </button>
         </div>
-        <div v-if="popup.Status == 'Danger'" class="m-flex-justify-center">
-          <!-- Button close -->
-          <button class="m-btn m-btn-success" @click="onClickClose()">
-            Đóng
+        <div v-if="popup.Status == status.Question" class="m-flex-justify-end">
+          <!-- Button comfirm -->
+          <button class="m-btn m-btn-success" @click="onClickYes()">Có</button>
+          <button class="m-btn m-btn-gray m-mr-10" @click="onClickNot()">
+            Không
           </button>
-        </div>
-        <div v-if="popup.Status == 'Question'" class="m-flex-between">
           <!-- Button close -->
           <button class="m-btn m-btn-gray" @click="onClickClose()">Huỷ</button>
-          <div class="m-flex">
-            <!-- Button close -->
-            <button class="m-btn m-btn-gray m-mr-10" @click="onClickNot()">
-              Không
-            </button>
-            <!-- Button comfirm -->
-            <button class="m-btn m-btn-success" @click="onClickYes()">
-              Có
-            </button>
-          </div>
+          <!-- Button close -->
         </div>
       </div>
     </div>
@@ -65,18 +41,21 @@
 
 <script>
 import { eventBus } from "../main";
+import Resourse from "../common/resource";
 export default {
   data() {
     return {
       icon: "",
-      status: null,
+      status: {
+        Question: Resourse.PopUp.Status.Question,
+        Warning: Resourse.PopUp.Status.Warning,
+      },
     };
   },
 
   props: ["isShowPopup", "popup"],
 
   methods: {
-  
     /**
      * If click OK, call function in father-component
      * Author: TTKien (12/12/2021)

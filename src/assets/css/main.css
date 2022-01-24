@@ -6,14 +6,15 @@
 @import url("./component/dropdown.css");
 @import url("./component/table.css");
 @import url("./component/pagigation.css");
-@import url("./component/chip-status.css");
-@import url("./component/toast.css");
+/* @import url("./component/chip-status.css"); */
+/* @import url("./component/toast.css"); */
 @import url("./component/checkbox.css");
 @import url("./component/dialog.css");
 @import url("./component/modal.css");
-@import url("./component/calendar.css");
-@import url("./component/loading.css");
+/* @import url("./component/calendar.css"); */
+/* @import url("./component/loading.css"); */
 @import url("./component/icon.css");
+@import url("./component/popup.css");
 
 @import url("./layouts/content.css");
 @import url("./layouts/navbar.css");

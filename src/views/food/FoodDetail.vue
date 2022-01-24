@@ -9,7 +9,7 @@
       >
         <div class="m-modal">
           <div class="m-modal-header">
-            <div class="m-modal-title">Thêm món</div>
+            <div class="m-modal-title">{{ title }}</div>
             <div class="m-close-modal mi-16 mi-close"></div>
           </div>
           <!-- <form> -->
@@ -122,18 +122,17 @@
                 <div class="m-row">
                   <div class="m-modal-col-3">Giá bán <span>(*)</span></div>
                   <div class="m-modal-col-4 m-flex-item-center">
-                    <input
-                      type="text"
+                    <money
                       style="text-align: right"
-                      class="m-input"
                       ref="txtSellingPrice"
-                      v-mask="'###.###.###.###.###'"
+                      class="m-input"
                       v-model="food.SellingPrice"
+                      v-bind="money"
                       :class="{
                         'm-input-error':
                           submitted && $v.food.SellingPrice.$error,
                       }"
-                    />
+                    ></money>
                     <div
                       class="mi-16 mi-warning"
                       v-show="submitted && $v.food.SellingPrice.$error"
@@ -145,14 +144,12 @@
                 <div class="m-row">
                   <div class="m-modal-col-3">Giá vốn</div>
                   <div class="m-modal-col-4">
-                    <input
-                      type="text"
-                      value="0,00"
+                    <money
                       style="text-align: right"
                       class="m-input"
-                      v-mask="'###.###.###.###.###'"
                       v-model="food.CostPrice"
-                    />
+                      v-bind="money"
+                    ></money>
                   </div>
                 </div>
                 <!-- Description -->
@@ -187,7 +184,6 @@
                     <input
                       type="checkbox"
                       class="m-checkbox"
-                      value="0"
                       v-model="displayStatus"
                     />
                     <div class="m-modal-10">Không hiển thị trên thực đơn</div>
@@ -240,7 +236,12 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(fm, index) in foodModifiers" :key="index">
+                    <tr
+                      v-for="(fm, index) in foodModifiers"
+                      :key="index"
+                      @click="onClickActiveModifier(index)"
+                      :class="{ 'row-active': index == rowActive }"
+                    >
                       <td>
                         <v-select
                           style="flex: 1"
@@ -256,12 +257,12 @@
                         ></v-select>
                       </td>
                       <td>
-                        <input
-                          type="text"
-                          class="m-input m-text-right"
-                          v-mask="'###.###.###.###.###'"
+                        <money
+                          style="text-align: right"
+                          class="m-input"
                           v-model="fm.AdditionalCharge"
-                        />
+                          v-bind="money"
+                        ></money>
                       </td>
                     </tr>
                   </tbody>
@@ -278,6 +279,7 @@
                 <button
                   class="m-btn m-btn-icon"
                   @click="onClickRemoveRow(index)"
+                  :class="{ 'm-disable': foodModifiers.length == 0 }"
                 >
                   <i class="mi mi-16 mi-delete m-mr-8"></i>
                   Xóa dòng
@@ -329,6 +331,11 @@
         <div class="modal-background"></div>
       </div>
     </div>
+    <base-popup-warning
+      :isShowPopup="isShowPopup"
+      :popup="popup"
+      @onClickClosePopup="onClickClosePopUp"
+    ></base-popup-warning>
   </div>
 </template>
 
@@ -336,8 +343,14 @@
 import api from "../../apis/ApiService";
 import { required, maxLength } from "vuelidate/lib/validators";
 import Const from "../../common/const";
+import Enum from "../../common/enum";
+import { Money } from "v-money";
+import BasePopupWarning from "../../components/BasePopupWarning.vue";
+import Resource from "../../common/resource";
+
 export default {
   props: ["isShowModal", "food", "modeBtn"],
+  components: { Money, BasePopupWarning },
   data() {
     return {
       apiRouter: "Foods",
@@ -361,11 +374,227 @@ export default {
       kitchens: [],
       /* List danh sách nhóm */
       menuCategorys: [],
+      /* Mode btn 0 - Cất, 1 - Cất và thêm mới */
       btn: 0,
+      /* Dòng modifier đang đc chọn */
+      rowActive: 0,
+      /* style money */
+      money: {
+        thousands: ".",
+        precision: 0,
+      },
+      /* Title form */
+      title: Enum.Title.Add,
+      isShowPopup: false,
+      popup: {}
     };
   },
 
   methods: {
+    /* ================ Events ================ */
+    /**
+     * Click nút [Huỷ]
+     * Author: TTKien(22/01/2022)
+     */
+    onClickClose() {
+      this.$emit("onClickClose");
+    }, /**
+     * Click nút đóng popup
+     * Author: TTKien(22/01/2022)
+     */
+    onClickClosePopUp() {
+      this.isShowPopup = false;
+    },
+    /**
+     * Khi click button Thêm dòng
+     * Author: TTKien (21/1/2022)
+     */
+    onClickAddRow() {
+      let con = {
+        ModifierId: null,
+        AdditionalCharge: 0,
+      };
+      this.foodModifiers.push(con);
+    },
+    /**
+     * Chọn 1 dòng modifier
+     * Author: TTKien(23/01/2022)
+     */
+    onClickActiveModifier(index) {
+      this.rowActive = index;
+    },
+    /**
+     * Xoá 1 dòng đang chọn
+     * Author: TTKien(23/01/2022)
+     */
+    onClickRemoveRow() {
+      this.foodModifiers.splice(this.rowActive, 1);
+    },
+    onClickSave(btn) {
+      /**
+       * Click nút [Cất] hoặc [Cất & thêm]
+       */
+      try {
+        this.submitted = true;
+        this.btn = btn;
+        // convert giá về int
+        if (this.food.SellingPrice)
+          this.food.SellingPrice = Number.parseInt(this.food.SellingPrice);
+        if (this.food.CostPrice)
+          this.food.CostPrice = Number.parseInt(this.food.CostPrice);
+        // Chuyển trạng thái false = 1 (hiển thị), true = 0 (không hiển thị)
+        this.food.DisplayStatus = this.displayStatus == true ? 0 : 1;
+        // Bỏ qua các trường rỗng
+        this.foodModifiers = this.foodModifiers.filter(
+          (x) => x.ModifierId != null
+        );
+        // Kiểm tra trùng con trong danh sách sở thích phục vụ
+        // if (this.foodModifiers.length > 0) {
+        //   for (const fm in this.foodModifiers) {
+        //     const element = this.foodModifiers[fm];
+        //     var isExist = this.foodModifiers.indexOf(element);
+        //     console.log(isExist);
+        //   }
+        // }
+
+        if (
+          this.modeBtn == Const.modeBtn.Add ||
+          this.modeBtn == Const.modeBtn.Duplicate
+        ) {
+          // Nhân bản
+          if (this.modeBtn == Const.modeBtn.Duplicate) {
+            this.FoodId = null;
+            this.food.FoodKitchens = [];
+          }
+          // Convert list id thành list obj kitchenId
+          for (const kitchenId in this.foodKitchens) {
+            const element = this.foodKitchens[kitchenId];
+            let objKitchenId = { KitchenId: element };
+            this.food.FoodKitchens.push(objKitchenId);
+          }
+          this.food.FoodModifiers = this.foodModifiers;
+        } else {
+          //UPDATE
+          // Lấy danh sách thay đổi bếp chế biến có edit mode
+          this.food.FoodKitchens = this.compareTwoArrayKitchen(
+            this.food.FoodKitchens,
+            this.foodKitchens
+          );
+          // Lấy danh sách thay đổi sở thích phục vu có edit mode
+          this.food.FoodModifiers = this.compareTwoArrayModifier(
+            this.food.FoodModifiers,
+            this.foodModifiers
+          );
+        }
+        this.$v.$touch();
+        // Nếu form error
+        if (this.$v.$invalid) {
+          // Tên món ăn rỗng
+          if (this.$v.food.FoodName.$error) {
+            setTimeout(() => {
+              this.$refs.txtFoodName.focus();
+            }, 0);
+            return;
+          }
+          // Mã món ăn rỗng hoặc quá 25 kí tự
+          if (this.$v.food.FoodCode.$error) {
+            setTimeout(() => {
+              this.$refs.txtFoodCode.focus();
+            }, 10);
+            return;
+          }
+          // K chọn đơn vị tính
+          if (this.$v.food.UnitId.$error) {
+            return;
+          }
+          // Giá bán rỗng
+          if (this.$v.food.SellingPrice.$error) {
+            setTimeout(() => {
+              this.$refs.txtSellingPrice.focus();
+            }, 10);
+            return;
+          }
+        } else {
+          if (
+            this.modeBtn == Const.modeBtn.Add ||
+            this.modeBtn == Const.modeBtn.Duplicate
+          ) {
+            this.callApiCreateFood();
+          } else {
+            // UPDATE
+            this.callApiUpdateFood();
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    /* ================== Api ======================== */
+    /**
+     * Gọi api thêm mới món ăn
+     * Author: TTKien(22/01/2022)
+     */
+    callApiCreateFood() {
+      const me = this;
+      api
+        .create(me.apiRouter, me.food)
+        .then((res) => {
+          // Nếu có lỗi dũ liệu nhập
+          if (res.data.Status == Resource.StatusCode.Warning) {
+            this.isShowPopup = true;
+            this.popup.Status = Resource.PopUp.Status.Warning;
+            this.popup.Title = res.data.Data[0];
+          } else {
+            me.$emit("getFoods");
+            // Select button 'cất '
+            if (me.btn == Const.btn.Save) {
+              // Hide modal
+              me.onClickClose();
+            } else {
+              //'cất và thêm'
+              // Reset Form
+              me.foodModifiers = [];
+              me.$emit("resetForm");
+              setTimeout(() => {
+                me.submitted = false;
+              }, 0);
+            }
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+    /**
+     * Gọi api thêm mới món ăn
+     * Author: TTKien(22/01/2022)
+     */
+    callApiUpdateFood() {
+      const me = this;
+      api
+        .update(me.apiRouter, me.food.FoodId, me.food)
+        .then(() => {
+          me.$emit("getFoods");
+          // Select button 'cất '
+          if (me.btn == Const.btn.Save) {
+            // Hide modal
+            me.onClickClose();
+          } else {
+            //'cất và thêm'
+            // Reset Form
+            me.submitted = false;
+            me.foodModifiers = [];
+            me.$emit("resetForm");
+            setTimeout(() => {
+              me.$refs.txtFoodName.focus();
+            }, 10);
+          }
+        })
+        .catch(function (res) {
+          console.log(res.response);
+        });
+    },
+    /* ============Lấy data============ */
     /**
      * Lấy tất cả đơn vị tính
      * Author: TTKien(22/01/2022)
@@ -426,97 +655,57 @@ export default {
           console.log(e);
         });
     },
+    /*================== Khác ================= */
     /**
-     * Click nút [Huỷ]
+     * Lấy mã món ăn theo tên món ăn
      * Author: TTKien(22/01/2022)
      */
-    onClickClose() {
-      this.$emit("onClickClose");
-    },
-    /**
-     * Click nút [Cất] hoặc [Cất & thêm]
-     */
-    onClickSave(btn) {
-      try {
-        this.submitted = true;
-        this.btn = btn;
-        // convert giá về int
-        if (this.food.SellingPrice)
-          this.food.SellingPrice = this.convertMoneyToInt(
-            this.food.SellingPrice
-          );
-        if (this.food.CostPrice)
-          this.food.CostPrice = this.convertMoneyToInt(this.food.CostPrice);
-        // Chuyển trạng thái false = 1 (hiển thị), true = 0 (không hiển thị)
-        this.food.DisplayStatus = this.food.DisplayStatus == true ? 0 : 1;
+    getFoodCode(foodName) {
+      if (foodName == null) {
+        return;
+      }
+      let str = foodName;
+      if (this.modeBtn == Const.modeBtn.Add) {
+        let str = this.convertStringToCode(foodName);
+        // Cắt bỏ khoảng trắng
+        this.food.FoodCode = str;
+      }
 
-        if (this.modeBtn == Const.modeBtn.Add) {
-          // Convert list id thành list obj kitchenId
-          for (const kitchenId in this.foodKitchens) {
-            const element = this.foodKitchens[kitchenId];
-            let objKitchenId = { KitchenId: element };
-            this.food.FoodKitchens.push(objKitchenId);
-          }
-          // Lấy danh sách sở thích của món ăn. loại bỏ những cái chưa chọn
-          this.food.FoodModifiers = this.foodModifiers.filter(
-            (x) => x.ModifierId != null
-          );
-        } else {
-          // Lấy danh sách thay đổi bếp chế biến có edit mode
-          this.food.FoodKitchens = this.compareTwoArrayKitchen(
-            this.food.FoodKitchens,
-            this.foodKitchens
-          );
-          // Lấy danh sách thay đổi sở thích phục vu có edit mode
-          this.foodModifiers = this.foodModifiers.filter(
-            (x) => x.ModifierId != null
-          );
-          this.food.FoodModifiers = this.compareTwoArrayModifier(
-            this.food.FoodModifiers,
-            this.foodModifiers
-          );
-          console.log(this.food.FoodKitchens);
-        }
-        this.$v.$touch();
-        // Nếu form error
-        if (this.$v.$invalid) {
-          // Tên món ăn rỗng
-          if (this.$v.food.FoodName.$error) {
-            setTimeout(() => {
-              this.$refs.txtFoodName.focus();
-            }, 0);
-            return;
-          }
-          // Mã món ăn rỗng hoặc quá 25 kí tự
-          if (this.$v.food.FoodCode.$error) {
-            setTimeout(() => {
-              this.$refs.txtFoodCode.focus();
-            }, 10);
-            return;
-          }
-          // K chọn đơn vị tính
-          if (this.$v.food.UnitId.$error) {
-            return;
-          }
-          // Giá bán rỗng
-          if (this.$v.food.SellingPrice.$error) {
-            setTimeout(() => {
-              this.$refs.txtSellingPrice.focus();
-            }, 10);
-            return;
-          }
-        } else {
-          if (this.modeBtn == Const.modeBtn.Add) {
-            this.callApiCreateFood();
-          } else {
-            // UPDATE
-            this.callApiUpdateFood();
-          }
-        }
-      } catch (error) {
-        console.log(error);
+      if (str.length > 25 || this.modeBtn == Const.modeBtn.Duplicate) {
+        let str2 = foodName;
+        str2 = str2.match(/\b(\w)/g);
+        str2 = str2.join("").toUpperCase();
+        str2 = str2.slice(0, 25);
+        this.food.FoodCode = str2;
       }
     },
+    /**
+     * Chuyển chuỗi string thành code VD: Sườn Xào => SUONXAO
+     * Author: TTKien(21/01/2022)
+     */
+    convertStringToCode(str) {
+      //Loại bỏ dấu tiếng việt
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+      str = str.replace(/đ/g, "d");
+      str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+      str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+      str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+      str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+      str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+      str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+      str = str.replace(/Đ/g, "D");
+      // Loại bỏ kí tự đặc biệt
+      str = str.replace(/[^\w\s]/gi, "");
+      // Loại bỏ khoẳng trắng
+      str = str.toUpperCase().split(" ").join("");
+      return str;
+    },
+
     /**
      * So sánh 2 mảng trả về mảng mới kèm thuộc tính edit mode.
      * Author: TTKien(23/01/2022)
@@ -569,9 +758,7 @@ export default {
       arrOld = foodModifiers;
       for (const fm in arrNew) {
         const element = arrNew[fm];
-        arrNew[fm].AdditionalCharge = this.convertMoneyToInt(
-          element.AdditionalCharge
-        );
+        arrNew[fm].AdditionalCharge = Number.parseInt(element.AdditionalCharge);
       }
       // Lấy ra các đối tượng xoá - Có trong mảng cũ nhưng không có trong mảng mới
       arrDel = arrOld.filter(function (v) {
@@ -605,134 +792,6 @@ export default {
       }
       return res;
     },
-    /**
-     * Gọi api thêm mới món ăn
-     * Author: TTKien(22/01/2022)
-     */
-    callApiCreateFood() {
-      const me = this;
-      api
-        .create(me.apiRouter, me.food)
-        .then(() => {
-          me.$emit("getFoods");
-          // Select button 'cất '
-          if (me.btn == Const.btn.Save) {
-            // Hide modal
-            me.onClickClose();
-          } else {
-            //'cất và thêm'
-            // Reset Form
-            me.foodModifiers = [];
-            me.$emit("resetForm");
-            setTimeout(() => {
-              me.submitted = false;
-            }, 0);
-          }
-        })
-        .catch(function (res) {
-          console.log(res.response);
-        });
-    },
-    /**
-     * Gọi api thêm mới món ăn
-     * Author: TTKien(22/01/2022)
-     */
-    callApiUpdateFood() {
-      const me = this;
-      api
-        .update(me.apiRouter, me.food.FoodId, me.food)
-        .then(() => {
-          me.$emit("getFoods");
-          // Select button 'cất '
-          if (me.btn == Const.btn.Save) {
-            // Hide modal
-            me.onClickClose();
-          } else {
-            //'cất và thêm'
-            // Reset Form
-            me.submitted = false;
-            me.foodModifiers = [];
-            me.$emit("resetForm");
-            setTimeout(() => {
-              me.$refs.txtFoodName.focus();
-            }, 10);
-          }
-        })
-        .catch(function (res) {
-          console.log(res.response);
-        });
-    },
-    /**
-     * Khi click button Thêm dòng
-     * Author: TTKien (21/1/2022)
-     */
-    onClickAddRow() {
-      let con = {
-        ModifierId: null,
-        AdditionalCharge: 0,
-      };
-      this.foodModifiers.push(con);
-    },
-
-    onClickRemoveRow(index) {
-      this.foodModifier.splice(index, 1);
-    },
-    /**
-     * Lấy mã món ăn theo tên món ăn
-     * Author: TTKien(22/01/2022)
-     */
-    getFoodCode(foodName) {
-      if (foodName == null) {
-        return;
-      }
-      let str = this.convertStringToCode(foodName);
-      // Cắt bỏ khoảng trắng
-      this.food.FoodCode = str;
-      if (str.length > 25) {
-        let str2 = foodName;
-        str2 = str2.match(/\b(\w)/g);
-        str2 = str2.join("").toUpperCase();
-        str2 = str2.slice(0, 25);
-        this.food.FoodCode = str2;
-      }
-    },
-    /**
-     * Chuyển chuỗi string thành code VD: Sườn Xào => SUONXAO
-     * Author: TTKien(21/01/2022)
-     */
-    convertStringToCode(str) {
-      //Loại bỏ dấu tiếng việt
-      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
-      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
-      str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
-      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
-      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
-      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
-      str = str.replace(/đ/g, "d");
-      str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
-      str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
-      str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
-      str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
-      str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
-      str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
-      str = str.replace(/Đ/g, "D");
-      // Loại bỏ kí tự đặc biệt
-      str = str.replace(/[^\w\s]/gi, "");
-      // Loại bỏ khoẳng trắng
-      str = str.toUpperCase().split(" ").join("");
-      return str;
-    },
-    /**
-     * Chuyển tiền thành số VD: 2.000.000 => 2000000
-     * Author: TTKien(22/01/2022)
-     */
-    convertMoneyToInt(money) {
-      if (money == null || money.split(" ").join("") == "") return 0;
-      if (money != 0) {
-        money = money.split(".").join("");
-        return Number.parseInt(money);
-      }
-    },
   },
 
   /**
@@ -741,9 +800,13 @@ export default {
    */
   validations: {
     food: {
-      FoodCode: { required, maxLength: maxLength(25) },
+      FoodCode: {
+        required,
+        maxLength: maxLength(25),
+      },
       FoodName: { required },
       UnitId: { required },
+
       SellingPrice: { required },
     },
   },
@@ -756,10 +819,22 @@ export default {
   },
 
   watch: {
+    /**
+     * Khi hiển thị form
+     * Author: TTKien(22/01/2022)
+     */
     isShowModal() {
+      this.title =
+        this.modeBtn == Const.modeBtn.Update
+          ? Enum.Title.Update
+          : Enum.Title.Add;
       this.tabIndex = 0;
       this.submitted = false;
-      if (this.modeBtn == Const.modeBtn.Update) {
+      this.displayStatus = this.food.DisplayStatus == 1 ? false : true;
+      if (
+        this.modeBtn == Const.modeBtn.Update ||
+        this.modeBtn == Const.modeBtn.Duplicate
+      ) {
         this.foodKitchens = this.food.FoodKitchens;
         let foodModifiers = [];
         for (const fm in this.food.FoodModifiers) {
@@ -780,13 +855,16 @@ export default {
         this.$refs.txtFoodName.focus();
       }, 10);
     },
-    tabIndex()
-    {
-      if(this.foodModifiers.length == 0) this.onClickAddRow();
+    /**
+     * Khi chuyển tab mới
+     * Author: TTKien(22/01/2022)
+     */
+    tabIndex() {
+      if (this.foodModifiers.length == 0) this.onClickAddRow();
       setTimeout(() => {
         this.$refs.txtFoodName.focus();
       }, 10);
-    }
+    },
   },
 };
 </script>

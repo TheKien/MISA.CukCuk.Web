@@ -127,3 +127,23 @@
     background-repeat: no-repeat;
     background-position: center center;
 }
+.mi-sort-asc{
+    background-image: url(../../images/icon/sort_asc.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.mi-sort-desc{
+    background-image: url(../../images/icon/sort_desc.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.mi-warning{
+    background-image: url(../../images/icon/icon-warning.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.mi-question{
+    background-image: url(../../images/icon/icon-question.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}

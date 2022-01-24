@@ -19,15 +19,18 @@
         <!-- Input nhập số trang-->
         <div>
           <input
-            type="number"
+            type="text"
             value="1"
             @blur="onChangePageIndex()"
+            v-mask="'###'"
             v-model="pageNumber"
             class="m-input"
             style="height: 24px; width: 38px"
           />
         </div>
-        <div class="m-text-paging" style="min-width: 50px">trên {{ totalPage }}</div>
+        <div class="m-text-paging" style="min-width: 50px">
+          trên {{ totalPage }}
+        </div>
         <!-- Button trang tiếp theo -->
         <div class="m-text-paging">|</div>
         <div
@@ -45,11 +48,14 @@
         <div class="mi-16 mi-page-refresh" @click="onClickRefresh()"></div>
         <div class="m-text-paging">|</div>
       </div>
-      <div class="m-chosse-size m-flex-item-center" :class="{
-            'm-chosse-size-active': showDropdownPageSize,
-          }">
+      <div
+        class="m-chosse-size m-flex-item-center"
+        :class="{
+          'm-chosse-size-active': showDropdownPageSize,
+        }"
+      >
         <div class="page-size-text">
-          {{ pageSize}}
+          {{ pageSize }}
         </div>
         <div
           class="m-dropdown"
@@ -77,7 +83,7 @@
             </div>
           </div>
         </div>
-      </div>  
+      </div>
     </div>
     <div class="m-paging-right">
       Hiển thị {{ pageIndex * pageSize - pageSize + 1 }} -
@@ -96,6 +102,7 @@ export default {
     return {
       pageNumber: this.pageIndex,
       showDropdownPageSize: false,
+       
     };
   },
   methods: {
@@ -136,7 +143,9 @@ export default {
      *  Author: TTKien(21/01/2022)
      */
     onChangePageIndex() {
+      this.pageNumber = Number.parseInt(this.pageNumber);
       if (this.pageNumber > this.totalPage) this.pageNumber = this.totalPage;
+      if (this.pageNumber == 0) this.pageNumber = 1;
       this.$emit("onChangePageIndex", this.pageNumber);
     },
     /**
@@ -150,15 +159,17 @@ export default {
      * Nút tải lại trang
      * Author: TTKien(22/01/2022)
      */
-    onClickRefresh()
-    {
+    onClickRefresh() {
       this.$emit("refresh");
-    }
+    },
   },
   watch: {
     pageSize() {
       this.pageNumber = 1;
       this.showDropdownPageSize = false;
+    },
+    pageIndex() {
+      this.pageNumber = this.pageIndex;
     },
   },
 };

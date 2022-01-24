@@ -4,7 +4,7 @@
 .m-modal-medium .m-modal {
   width: 750px;
   height: 540px;
-  z-index: 19000;
+  z-index: 15;
   background-color: #fff;
   border-radius: 4px;
   border: 5px solid #0072bc;
@@ -254,4 +254,10 @@ table.m-modal-table th {
 }
 .m-modal-grid-view .v-select{
   border: none;
+}
+table.m-modal-table tbody tr:hover {
+  background-color: #d7e9f4;
+}
+table.m-modal-table .m-input{
+  background-color: transparent;
 }

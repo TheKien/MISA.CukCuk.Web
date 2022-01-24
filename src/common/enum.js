@@ -26,6 +26,10 @@ let Enum = {
   },
   AdditionalOperator: {
     And: "AND"
+  },
+  Title: {
+    Add: "Thêm mới",
+    Update: "Sửa món"
   }
 };
 export default Enum;

@@ -1,13 +1,6 @@
 <template>
   <div class="m-filter">
     <div class="m-cbb-filter">
-      <!-- <v-select
-        class="m-modal-col-6"
-        :options="operators"
-        :reduce="(Name) => Name.Value"
-        label="Show"
-        v-model="operator"
-      ></v-select> -->
       <v-select
         class="m-modal-col-6"
         :get-option-label="(option) => option.Name"
@@ -49,32 +42,32 @@ export default {
       operators: [],
       /* Danh sách các toán tử chuỗi*/
       operatorString: [
-        { Name: "*.", Show: "* : Chứa", Value: Enum.Operator.Contain },
-        { Name: "=.", Show: "= : Bằng", Value: Enum.Operator.EqualTo },
+        { Name: "*", Show: "* : Chứa", Value: Enum.Operator.Contain },
+        { Name: "=", Show: "= : Bằng", Value: Enum.Operator.EqualTo },
         {
-          Name: "+.",
+          Name: "+",
           Show: "+ : Bắt đầu bằng",
           Value: Enum.Operator.BeginWith,
         },
-        { Name: "-.", Show: "- : Kết thúc bằng", Value: Enum.Operator.EndWith },
-        { Name: "!.", Show: "! : Không chứa", Value: Enum.Operator.NotContain },
+        { Name: "-", Show: "- : Kết thúc bằng", Value: Enum.Operator.EndWith },
+        { Name: "!", Show: "! : Không chứa", Value: Enum.Operator.NotContain },
       ],
       /* Danh sách các toán tử số*/
       operatorInt: [
-        { Name: "=.", Show: "= : Bằng", Value: Enum.Operator.EqualTo },
+        { Name: "=", Show: "= : Bằng", Value: Enum.Operator.EqualTo },
         {
-          Name: "<.",
+          Name: "<",
           Show: "< : Nhỏ hơn",
           Value: Enum.Operator.LessThan,
         },
         {
-          Name: "<=.",
+          Name: "<=",
           Show: "<= : Nhỏ hơn hoặc bằng",
           Value: Enum.Operator.LessThanOrEqualTo,
         },
-        { Name: ">.", Show: "> : Lớn hơn", Value: Enum.Operator.MoreThan },
+        { Name: ">", Show: "> : Lớn hơn", Value: Enum.Operator.MoreThan },
         {
-          Name: ">=.",
+          Name: ">=",
           Show: ">= : Lớn hơn hoặc bằng",
           Value: Enum.Operator.MoreThanOrEqualTo,
         },

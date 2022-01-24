@@ -33,18 +33,21 @@
               <i class="mi mi-16 mi-delete m-mr-5"></i>
               Xóa
             </button>
-            <button class="m-btn m-btn-icon" @click="getFoods()">
+            <button class="m-btn m-btn-icon" @click="onClickRefesh()">
               <i class="mi mi-16 mi-refresh m-mr-5"></i>
               Nạp
             </button>
           </div>
+          <!-- Table -->
           <food-grid
             :foodList="foodList"
             :foodId="foodId"
+            :loading="loading"
             @onClickRowActive="onClickRowActive"
             @onChangeInputValue="onChangeInputValue"
             @onChangeSortObject="onChangeSortObject"
           ></food-grid>
+          <!-- End table -->
         </div>
         <!-- paginate -->
         <base-pagination
@@ -56,13 +59,13 @@
           @refresh="getFoods"
           @onChangePageIndex="onChangePageIndex"
           @onChangePageSize="onChangePageSize"
-          @onChangeSortObject="onChangeSortObject"
         ></base-pagination>
         <!-- end paginate -->
         <!-- end content main -->
       </section>
       <!-- END CONTENT -->
     </div>
+    <!-- Modal -->
     <food-detail
       :isShowModal="isShowModal"
       :food="food"
@@ -71,6 +74,7 @@
       @onClickClose="onClickHideModalFood"
       @resetForm="resetForm"
     ></food-detail>
+    <!-- End modal -->
   </div>
 </template>
 <script>
@@ -116,10 +120,10 @@ export default {
         FoodCode: null,
         FoodName: null,
         FoodOrder: null,
-        SellingPrice: null,
-        CostPrice: null,
+        SellingPrice: 0,
+        CostPrice: 0,
         Description: null,
-        DisplayStatus: true,
+        DisplayStatus: 1,
         ImageName: null,
         FoodCategoryId: null,
         MenuCategoryId: null,
@@ -133,7 +137,10 @@ export default {
       },
       /* Form món ăn */
       isShowModal: false,
+      /* Mode khi hiển thị form 0 - Add, 1 - Update, 2 - Duplicate */
       modeBtn: 0,
+      /* Ẩn hiện loading */
+      loading: false,
     };
   },
 
@@ -213,11 +220,11 @@ export default {
      * Click nut [Sửa] trên trang thực đơn
      * Author: TTKien(22/01/2022)
      */
-    onClickUpdateFood() {
+    async onClickUpdateFood() {
       try {
         // Api getbyid
         this.modeBtn = Const.modeBtn.Update;
-        this.callApiGetFoodById();
+        await this.callApiGetFoodById();
         setTimeout(() => {
           this.onClickShowModalFood();
         }, 200);
@@ -229,11 +236,11 @@ export default {
      * Click nut [Nhân bản] trên trang thực đơn
      * Author: TTKien(23/01/2022)
      */
-    onClickDuplicateFood() {
+    async onClickDuplicateFood() {
       try {
         // Api getbyid
-        this.modeBtn = Const.modeBtn.Add;
-        this.callApiGetFoodById();
+        this.modeBtn = Const.modeBtn.Duplicate;
+        await this.callApiGetFoodById();
         setTimeout(() => {
           this.onClickShowModalFood();
         }, 200);
@@ -256,6 +263,7 @@ export default {
     onChangeInputValue(objFilter) {
       try {
         let me = this;
+        this.pageIndex = 1;
         // Nếu obj có giá trị rỗng
         if (objFilter.Value == "" || objFilter.Value == null) {
           // Neu ds loc khac rong
@@ -299,6 +307,18 @@ export default {
       }
     },
     /**
+     * Click nút [Nạp]
+     * Author: TTKien(21/01/2022)
+     */
+    onClickRefesh() {
+      this.pageIndex = 1;
+      this.pageSize = 50;
+      this.getFoods();
+    },
+    onClickClosePopup(){
+      
+    },
+    /**
      * Reset lại form food detail
      * Author(22/01/2022)
      */
@@ -308,10 +328,10 @@ export default {
         FoodCode: null,
         FoodName: null,
         FoodOrder: null,
-        SellingPrice: null,
-        CostPrice: null,
+        SellingPrice: 0,
+        CostPrice: 0,
         Description: null,
-        DisplayStatus: false,
+        DisplayStatus: 1,
         ImageName: null,
         FoodCategoryId: null,
         MenuCategoryId: null,
@@ -337,11 +357,13 @@ export default {
           me.food = response.data;
           //
           let foodKitchens = [];
+          // if (this.modeBtn == Const.modeBtn.Update) {
           for (const kitchenId in me.food.FoodKitchens) {
             const element = me.food.FoodKitchens[kitchenId].KitchenId;
             foodKitchens.push(element);
           }
           me.food.FoodKitchens = foodKitchens;
+          // }
           //
           // let foodModifiers = [];
           // for (const fm in me.food.FoodModifiers) {
@@ -365,6 +387,7 @@ export default {
     callApiGetPaingFilterSort() {
       try {
         let me = this;
+        me.loading = true;
         let sort = "";
         let filters = "";
         if (this.objSort.Column == null) sort = "";
@@ -384,6 +407,9 @@ export default {
               me.totalPage = 1;
               me.totalRecord = 0;
             }
+            setTimeout(() => {
+              me.loading = false;
+            }, 300);
           })
           .catch((e) => {
             console.log(e);
@@ -392,7 +418,10 @@ export default {
         console.log(error);
       }
     },
-
+    /**
+     * Gọi api xoá móna ăn theo id
+     * Author: TTKien(23/01/2022)
+     */
     callApiDeleteFood() {
       api
         .delete(this.apiRouter, this.foodId)
@@ -410,13 +439,20 @@ export default {
   },
 
   watch: {
+    /**
+     * Khi trang hiện tại thay đổi
+     * Author: TTKien(21/01/2022)
+     */
     pageIndex() {
       this.getFoods();
     },
-
+    /**
+     * Khi số bản ghi trên trang thay đổi
+     * Author: TTKien(21/01/2022)
+     */
     pageSize() {
       this.getFoods();
     },
   },
 };
-</script>
+</script>ba
