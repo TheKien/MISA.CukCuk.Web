@@ -30,3 +30,7 @@
     background-color: #fff !important;
     border-color:#0072BC !important;
 }
+.m-btn:focus{
+    border-color: #0072BC;
+    background-color: #E4F2EA;
+}

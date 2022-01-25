@@ -18,6 +18,9 @@ Vue.component('v-select', vSelect)
 Vue.use(Vuelidate)
 /* Thư viện format input */
 Vue.use(VueMask);
+/* Thư viện phím tawast */
+Vue.use(require('vue-shortkey'))
+
 export const eventBus = new Vue()
  
 // Thư viện convert money

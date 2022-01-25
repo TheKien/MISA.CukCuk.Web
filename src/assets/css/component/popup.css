@@ -5,7 +5,7 @@
     position: absolute;
     background-color: #ffffff;
     z-index: 21;
-    height: 142px;
+    height: auto;
     width: 400px;
     top: 50%;
     left: 50%;
@@ -24,7 +24,7 @@
 }
 .m-popup-content {
     padding: 10px;
-    height: 71px;
+    height: auto;
 }
 .m-popup-content .m-messenger {
     flex: 1;
@@ -35,6 +35,8 @@
     padding: 6px;
 }
 .m-popup-footer .m-btn{
+    padding: 3px;
+    width: 75px;
     height: 24px;
     margin-right: 4px;
     border: 1px solid #ccc;
@@ -43,6 +45,9 @@
 .m-popup-footer .m-btn:hover{
 border: 1px solid #0072bc;
 }
+.m-popup-footer .m-btn:focus{
+    border: 1px solid #0072bc;
+    }
 .m-popup-background {
     position: fixed;
     top: 0;
@@ -55,3 +60,7 @@ border: 1px solid #0072bc;
 .m-popup-show {
     display: block;
 }
+/* Question */
+ /* .m-popup-content{
+
+} */

@@ -1,4 +1,4 @@
-let Resource = {
+const Resource = {
   Url: "https://localhost:44375/api/v1",
   Message: {
     ErrorValidate:{
@@ -16,10 +16,7 @@ let Resource = {
     Title: {
       Question: "Dữ liệu đã bị thay đổi, bạn có muốn cất không?",
       TitleDeleteWithParam(param) {
-        return `Bạn có thực sự muốn xoá nhân viên <${param}> không?`;
-      },
-      TitleDulicateCodeWithParam(param) {
-        return `Mã <${param}> đã tồn tại trên một trong các danh sách sau: Món ăn, đồ uống, combo, món khác, dịch vụ tính tiền theo thời gian`;
+        return `Bạn có thực sự muốn xoá món <<${param}>>   không?`;
       },
     },
   },

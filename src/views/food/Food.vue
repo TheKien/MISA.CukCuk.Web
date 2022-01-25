@@ -3,7 +3,7 @@
     <div class="m-main">
       <!-- CONTENT -->
       <section class="m-content">
-        <!-- title page -->
+        <!-- Title page -->
         <div class="m-title">
           <span>Thực đơn</span>
           <div class="m-title-right">
@@ -13,31 +13,72 @@
             </button>
           </div>
         </div>
-        <!-- end title page -->
+        <!-- End title page -->
+
         <!-- Content main -->
         <div class="m-content-main">
+          <!-- Toolbar -->
           <div class="m-toolbar">
-            <button class="m-btn m-btn-icon" @click="onClickAddFood()">
+            <!-- Button add food -->
+            <button
+              class="m-btn m-btn-icon"
+              title="Ctrl+1"
+              v-shortkey="['ctrl', '1']"
+              @shortkey="onClickAddFood()"
+              @click="onClickAddFood()"
+            >
               <i class="mi mi-16 mi-new m-mr-5"></i>
               Thêm
             </button>
+            <!-- End button add food -->
+
+            <!-- Button duplicate food -->
             <button class="m-btn m-btn-icon" @click="onClickDuplicateFood()">
               <i class="mi mi-16 mi-duplicate m-mr-5"></i>
               Nhân bản
             </button>
-            <button class="m-btn m-btn-icon" @click="onClickUpdateFood()">
+            <!-- End button duplicate food -->
+
+            <!-- Button update food -->
+            <button
+              class="m-btn m-btn-icon"
+              title="Ctrl+E"
+              v-shortkey="['ctrl', 'e']"
+              @shortkey="onClickUpdateFood()"
+              @click="onClickUpdateFood()"
+            >
               <i class="mi mi-16 mi-update m-mr-5"></i>
               Sửa
             </button>
-            <button class="m-btn m-btn-icon" @click="callApiDeleteFood()">
+            <!-- End update food -->
+
+            <!-- Button delete food -->
+            <button
+              class="m-btn m-btn-icon"
+              title="Ctrl+D"
+              v-shortkey="['ctrl', 'd']"
+              @shortkey="onClickShowPopupDelete()"
+              @click="onClickShowPopupDelete()"
+            >
               <i class="mi mi-16 mi-delete m-mr-5"></i>
               Xóa
             </button>
-            <button class="m-btn m-btn-icon" @click="onClickRefesh()">
+            <!-- End button delete food -->
+
+            <!-- Button refesh -->
+            <button
+              class="m-btn m-btn-icon"
+              title="Ctrl+Y"
+              v-shortkey="['ctrl', 'y']"
+              @shortkey="onClickRefesh()"
+              @click="onClickRefesh()"
+            >
               <i class="mi mi-16 mi-refresh m-mr-5"></i>
               Nạp
             </button>
+            <!-- End button refesh -->
           </div>
+          <!-- End toolbar -->
           <!-- Table -->
           <food-grid
             :foodList="foodList"
@@ -46,22 +87,24 @@
             @onClickRowActive="onClickRowActive"
             @onChangeInputValue="onChangeInputValue"
             @onChangeSortObject="onChangeSortObject"
+            @ondblclickUpdateFood="onClickUpdateFood"
           ></food-grid>
           <!-- End table -->
+
+          <!-- Paginate -->
+          <base-pagination
+            :pageIndex="pageIndex"
+            :pageSize="pageSize"
+            :totalRecord="totalRecord"
+            :totalPage="totalPage"
+            :listPageSizes="listPageSizes"
+            @refresh="getFoods"
+            @onChangePageIndex="onChangePageIndex"
+            @onChangePageSize="onChangePageSize"
+          ></base-pagination>
         </div>
-        <!-- paginate -->
-        <base-pagination
-          :pageIndex="pageIndex"
-          :pageSize="pageSize"
-          :totalRecord="totalRecord"
-          :totalPage="totalPage"
-          :listPageSizes="listPageSizes"
-          @refresh="getFoods"
-          @onChangePageIndex="onChangePageIndex"
-          @onChangePageSize="onChangePageSize"
-        ></base-pagination>
-        <!-- end paginate -->
-        <!-- end content main -->
+        <!-- End paginate -->
+        <!-- End content main -->
       </section>
       <!-- END CONTENT -->
     </div>
@@ -75,6 +118,16 @@
       @resetForm="resetForm"
     ></food-detail>
     <!-- End modal -->
+    <!-- Popup question -->
+    <base-popup-question
+      :isShowPopup="isShowPopup"
+      :popup="popup"
+      :showBtnCancel="false"
+      @onClickYes="callApiDeleteFood"
+      @onClickNo="onClickClosePopUp"
+      @onClickCancel="onClickClosePopUp"
+    ></base-popup-question>
+    <!-- End popup question -->
   </div>
 </template>
 <script>
@@ -83,10 +136,12 @@ import BasePagination from "../../components/BasePagination.vue";
 import FoodDetail from "./FoodDetail.vue";
 import FoodGrid from "./FoodGrid.vue";
 import Const from "../../common/const";
+import Resource from "../../common/resource";
+import BasePopupQuestion from "../../components/BasePopupQuestion.vue";
 
 // import Filters from "../../common/filters";
 export default {
-  components: { FoodGrid, FoodDetail, BasePagination },
+  components: { FoodGrid, FoodDetail, BasePagination, BasePopupQuestion },
 
   data() {
     return {
@@ -141,6 +196,9 @@ export default {
       modeBtn: 0,
       /* Ẩn hiện loading */
       loading: false,
+      /* Ẩn hiện popup xoá */
+      isShowPopup: false,
+      popup: {},
     };
   },
 
@@ -173,7 +231,6 @@ export default {
     onClickHideModalFood() {
       this.isShowModal = false;
     },
-
     /**
      * Chuyển tới trang khi nhập input
      *  Author: TTKien(21/01/2022)
@@ -248,6 +305,20 @@ export default {
         console.log(error);
       }
     },
+
+    onClickShowPopupDelete() {
+      this.isShowPopup = true;
+      let food = this.foodList.find((x) => x.FoodId == this.foodId);
+      this.popup = {
+        Status: Resource.PopUp.Status.Question,
+        Title: Resource.PopUp.Title.TitleDeleteWithParam(
+          `${food.FoodCode} - ${food.FoodName}`
+        ),
+      };
+    },
+    onClickClosePopUp() {
+      this.isShowPopup = false;
+    },
     /**
      * Thay đổi column sắp xếp
      * Author: TTKien(22/01/2022)
@@ -285,18 +356,18 @@ export default {
           else {
             // Neu ds loc khac rong
             // kiem tra trung
-            let i = 0;
+            let index = 0;
             for (let i = 0; i < me.listObjFilters.length; i++) {
               const element = me.listObjFilters[i];
               // neu trung thi sua
               if (element.Column == objFilter.Column) {
                 element.Value = objFilter.Value;
                 element.Operator = objFilter.Operator;
-                i = i + 1;
+                index = index + 1;
               }
             }
             //Neu obj khong co trong ds loc
-            if (i < 1) {
+            if (index < 1) {
               me.listObjFilters.push(objFilter);
             }
           }
@@ -315,9 +386,7 @@ export default {
       this.pageSize = 50;
       this.getFoods();
     },
-    onClickClosePopup(){
-      
-    },
+    onClickClosePopup() {},
     /**
      * Reset lại form food detail
      * Author(22/01/2022)
@@ -399,7 +468,8 @@ export default {
           )
           .then((response) => {
             me.foodList = response.data.Data;
-            me.foodId = this.foodList[0].FoodId;
+            if (response.data.Data.length > 0)
+              me.foodId = this.foodList[0].FoodId;
             me.totalRecord = response.data.TotalRecord;
             if (response.data) {
               me.totalPage = response.data.TotalPage;
@@ -427,7 +497,6 @@ export default {
         .delete(this.apiRouter, this.foodId)
         .then((response) => {
           console.log(response);
-          alert("Xoa ok");
         })
         .catch((error) => {
           console.log(error);

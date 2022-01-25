@@ -5,12 +5,14 @@
         <!-- Button trang đầu tiên -->
         <div
           class="mi-16 mi-page-first"
+          title="Trang đầu"
           @click="onClickPageFirst()"
           :class="{ 'm-disable': pageIndex == 1 }"
         ></div>
         <!-- Button trang trước -->
         <div
           class="mi-16 mi-page-pre"
+          title="Trang trước"
           @click="onClickPagePre()"
           :class="{ 'm-disable': pageIndex == 1 }"
         ></div>
@@ -35,17 +37,19 @@
         <div class="m-text-paging">|</div>
         <div
           class="mi-16 mi-page-next"
+          title="Trang tiếp"
           @click="onClickPageNext()"
           :class="{ 'm-disable': pageIndex == totalPage }"
         ></div>
         <!-- Button trang cuối cùng -->
         <div
           class="mi-16 mi-page-last"
+          title="Trang cuối"
           @click="onClickPageLast()"
           :class="{ 'm-disable': pageIndex == totalPage }"
         ></div>
         <div class="m-text-paging">|</div>
-        <div class="mi-16 mi-page-refresh" @click="onClickRefresh()"></div>
+        <div class="mi-16 mi-page-refresh" title="Tải lại" @click="onClickRefresh()"></div>
         <div class="m-text-paging">|</div>
       </div>
       <div

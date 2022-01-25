@@ -10,11 +10,17 @@
         <div class="m-modal">
           <div class="m-modal-header">
             <div class="m-modal-title">{{ title }}</div>
-            <div class="m-close-modal mi-16 mi-close"></div>
+            <div
+              class="m-close-modal mi-16 mi-close"
+              title="Esc"
+              v-shortkey="['esc']"
+              @shortkey="onClickShowPopupQuestion()"
+            ></div>
           </div>
           <!-- <form> -->
           <div class="m-modal-content">
             <div class="m-tab-bar">
+              <!-- Tab -->
               <div
                 class="m-tab"
                 :class="{ 'tab-conversions': tabIndex == 0 }"
@@ -30,6 +36,7 @@
                 Sở thích phục vụ
               </div>
             </div>
+            <!-- End tab -->
             <!-- Thông tin chung -->
             <div
               class="m-flex-justify-content-between"
@@ -186,7 +193,9 @@
                       class="m-checkbox"
                       v-model="displayStatus"
                     />
-                    <div class="m-modal-10">Không hiển thị trên thực đơn</div>
+                    <div class="m-modal-10">
+                      &nbsp; Không hiển thị trên thực đơn
+                    </div>
                   </div>
                 </div>
               </div>
@@ -197,9 +206,14 @@
                   <div class="m-photo-default"></div>
                   <!-- <div class="m-photo-icon"> Biểu tượng</div>   -->
                   <div class="m-btn-box">
-                    <div class="m-btn m-btn-add-photo">...</div>
+                    <div
+                      class="m-btn m-btn-add-photo"
+                      title="Bấm vào đây để chọn ảnh"
+                    >
+                      ...
+                    </div>
                     <br />
-                    <div class="m-btn m-btn-delete-photo">
+                    <div class="m-btn m-btn-delete-photo" title="Xoá ảnh">
                       <i class="fas fa-times" style="color: red"></i>
                     </div>
                   </div>
@@ -271,6 +285,9 @@
               <div class="m-end-tab">
                 <button
                   class="m-btn m-btn-icon m-mr-5"
+                  title="Ctrl+B"
+                  v-shortkey="['ctrl', 'insert']"
+                  @shortkey="onClickAddRow()"
                   @click="onClickAddRow()"
                 >
                   <i class="mi mi-16 mi-new m-mr-8"></i>
@@ -278,6 +295,9 @@
                 </button>
                 <button
                   class="m-btn m-btn-icon"
+                  title="Ctrl+B"
+                  v-shortkey="['ctrl', 'del']"
+                  @shortkey="onClickRemoveRow(index)"
                   @click="onClickRemoveRow(index)"
                   :class="{ 'm-disable': foodModifiers.length == 0 }"
                 >
@@ -300,7 +320,9 @@
             <div class="m-footer-right">
               <button
                 class="m-btn m-btn-icon m-mr-8"
-                title="Ctrl + S"
+                title="Ctrl+S"
+                v-shortkey="['ctrl', 's']"
+                @shortkey="onClickSave(0)"
                 @click="onClickSave(0)"
               >
                 <i class="mi-16 mi-save m-mr-8"></i>
@@ -308,7 +330,9 @@
               </button>
               <button
                 class="m-btn m-btn-icon m-mr-8"
-                title="Ctrl + Shift + S"
+                title="Ctrl+Shift +S"
+                v-shortkey="['ctrl', 'shift', 's']"
+                @shortkey="onClickSave(1)"
                 @click="onClickSave(1)"
               >
                 <i class="mi-16 mi-save-add m-mr-8"></i>
@@ -316,8 +340,10 @@
               </button>
               <button
                 class="m-btn m-btn-icon"
+                title="Ctrl+B"
+                v-shortkey="['ctrl', 'b']"
+                @shortkey="onClickClose()"
                 @click="onClickClose()"
-                title="Ctrl + B"
               >
                 <i class="mi-16 mi-cancel m-mr-8"></i>
                 Hủy bỏ
@@ -331,11 +357,23 @@
         <div class="modal-background"></div>
       </div>
     </div>
+    <!-- Popup warning -->
     <base-popup-warning
       :isShowPopup="isShowPopup"
       :popup="popup"
       @onClickClosePopup="onClickClosePopUp"
     ></base-popup-warning>
+    <!-- End popup warning -->
+    <!-- Popup question -->
+    <base-popup-question
+      :isShowPopup="isShowPopup"
+      :popup="popup"
+      :showBtnCancel="true"
+      @onClickYes="onClickSave"
+      @onClickNo="onClickClose"
+      @onClickCancel="onClickClosePopUp"
+    ></base-popup-question>
+    <!-- End popup question -->
   </div>
 </template>
 
@@ -347,10 +385,10 @@ import Enum from "../../common/enum";
 import { Money } from "v-money";
 import BasePopupWarning from "../../components/BasePopupWarning.vue";
 import Resource from "../../common/resource";
-
+import BasePopupQuestion from "../../components/BasePopupQuestion.vue";
 export default {
   props: ["isShowModal", "food", "modeBtn"],
-  components: { Money, BasePopupWarning },
+  components: { Money, BasePopupWarning, BasePopupQuestion  },
   data() {
     return {
       apiRouter: "Foods",
@@ -386,27 +424,39 @@ export default {
       /* Title form */
       title: Enum.Title.Add,
       isShowPopup: false,
-      popup: {}
+      popup: {},
     };
   },
 
   methods: {
     /* ================ Events ================ */
     /**
-     * Click nút [Huỷ]
+     * Click nút [Huỷ] trong modal
      * Author: TTKien(22/01/2022)
      */
     onClickClose() {
       this.$emit("onClickClose");
-    }, /**
-     * Click nút đóng popup
+    },
+    /**
+     * Click nút [X] của modal
+     * Nếu dữ liệu thay đổi hiển thị popup, ngược lại đóng modal
+     * Author(25/01/2022)
+     */
+    onClickShowPopupQuestion() {
+      this.isShowPopup = true;
+      this.popup.Title = Resource.PopUp.Title.Question;
+      this.popup.Status = Resource.PopUp.Status.Question;
+    },
+    /**
+     * Click nút [Huỷ] hoặc [Đồng ý] của popup
      * Author: TTKien(22/01/2022)
      */
     onClickClosePopUp() {
       this.isShowPopup = false;
     },
+
     /**
-     * Khi click button Thêm dòng
+     * Khi click button [Thêm dòng]
      * Author: TTKien (21/1/2022)
      */
     onClickAddRow() {
@@ -417,31 +467,26 @@ export default {
       this.foodModifiers.push(con);
     },
     /**
-     * Chọn 1 dòng modifier
+     * Chọn 1 dòng
      * Author: TTKien(23/01/2022)
      */
     onClickActiveModifier(index) {
       this.rowActive = index;
     },
     /**
-     * Xoá 1 dòng đang chọn
+     * Click nút [Xoá dòng] Xoá 1 dòng đang chọn
      * Author: TTKien(23/01/2022)
      */
     onClickRemoveRow() {
       this.foodModifiers.splice(this.rowActive, 1);
     },
+    /**
+     * Click nút [Cất] hoặc [Cất & thêm]
+     */
     onClickSave(btn) {
-      /**
-       * Click nút [Cất] hoặc [Cất & thêm]
-       */
       try {
         this.submitted = true;
         this.btn = btn;
-        // convert giá về int
-        if (this.food.SellingPrice)
-          this.food.SellingPrice = Number.parseInt(this.food.SellingPrice);
-        if (this.food.CostPrice)
-          this.food.CostPrice = Number.parseInt(this.food.CostPrice);
         // Chuyển trạng thái false = 1 (hiển thị), true = 0 (không hiển thị)
         this.food.DisplayStatus = this.displayStatus == true ? 0 : 1;
         // Bỏ qua các trường rỗng
@@ -529,6 +574,21 @@ export default {
         console.log(error);
       }
     },
+    /**
+     * Reset form khi cất và thêm
+     * Author(25/01/2022)
+     */
+    resetForm() {
+      this.displayStatus = false;
+      this.title = Enum.Title.Add;
+      this.foodModifiers = [];
+      this.foodKitchens = [];
+      this.submitted = false;
+      this.$emit("resetForm");
+      setTimeout(() => {
+        this.$refs.txtFoodName.focus();
+      }, 0);
+    },
     /* ================== Api ======================== */
     /**
      * Gọi api thêm mới món ăn
@@ -541,23 +601,16 @@ export default {
         .then((res) => {
           // Nếu có lỗi dũ liệu nhập
           if (res.data.Status == Resource.StatusCode.Warning) {
-            this.isShowPopup = true;
-            this.popup.Status = Resource.PopUp.Status.Warning;
-            this.popup.Title = res.data.Data[0];
+            me.isShowPopup = true;
+            me.popup.Status = Resource.PopUp.Status.Warning;
+            me.popup.Title = res.data.Data[0];
           } else {
             me.$emit("getFoods");
-            // Select button 'cất '
+            me.displayStatus = false;
             if (me.btn == Const.btn.Save) {
-              // Hide modal
               me.onClickClose();
             } else {
-              //'cất và thêm'
-              // Reset Form
-              me.foodModifiers = [];
-              me.$emit("resetForm");
-              setTimeout(() => {
-                me.submitted = false;
-              }, 0);
+              this.resetForm();
             }
           }
         })
@@ -573,25 +626,22 @@ export default {
       const me = this;
       api
         .update(me.apiRouter, me.food.FoodId, me.food)
-        .then(() => {
-          me.$emit("getFoods");
-          // Select button 'cất '
-          if (me.btn == Const.btn.Save) {
-            // Hide modal
-            me.onClickClose();
+        .then((res) => {
+          if (res.data.Status == Resource.StatusCode.Warning) {
+            this.isShowPopup = true;
+            this.popup.Status = Resource.PopUp.Status.Warning;
+            this.popup.Title = res.data.Data[0];
           } else {
-            //'cất và thêm'
-            // Reset Form
-            me.submitted = false;
-            me.foodModifiers = [];
-            me.$emit("resetForm");
-            setTimeout(() => {
-              me.$refs.txtFoodName.focus();
-            }, 10);
+            me.$emit("getFoods");
+            if (me.btn == Const.btn.Save) {
+              me.onClickClose();
+            } else {
+              this.resetForm();
+            }
           }
         })
-        .catch(function (res) {
-          console.log(res.response);
+        .catch(function (error) {
+          console.log(error);
         });
     },
     /* ============Lấy data============ */
@@ -819,6 +869,9 @@ export default {
   },
 
   watch: {
+    title() {
+      this.tabIndex = 0;
+    },
     /**
      * Khi hiển thị form
      * Author: TTKien(22/01/2022)

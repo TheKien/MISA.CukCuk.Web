@@ -4,14 +4,14 @@
     <div class="m-popup">
       <div class="m-popup-header">CUKCUK - Quản lý nhà hàng</div>
       <div class="m-popup-content m-flex">
-        <div class="mi mi-32 mi-warning"></div>
+        <div class="mi mi-32 mi-error"></div>
         <!-- Messenger -->
         <div class="m-messenger">{{ popup.Title }}</div>
       </div>
       <div class="m-popup-footer">
         <div class="m-flex-justify-end">
           <!-- Button close -->
-          <button class="m-btn" @click="onClickClose()">Đồng ý</button>
+          <button class="m-btn" ref="btnClose" @click="onClickClose()">Đồng ý</button>
         </div>
       </div>
     </div>
@@ -32,7 +32,7 @@ export default {
 
   methods: {
     /**
-     * If click NOT, close the popup
+     * Click nút [Đồng Ý]
      * Author: TTKien (22/01/2021)
      */
     onClickClose() {

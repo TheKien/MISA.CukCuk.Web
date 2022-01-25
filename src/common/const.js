@@ -1,4 +1,4 @@
-let Const= {
+const Const= {
   modeBtn : {
     Add: 0,
     Update: 1,

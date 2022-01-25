@@ -1,4 +1,4 @@
-let Enum = {
+const Enum = {
   Sort: {
     Asc: 0,
     Desc: 1,
