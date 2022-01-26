@@ -179,7 +179,7 @@ export default {
         CostPrice: 0,
         Description: null,
         DisplayStatus: 1,
-        ImageName: null,
+        ImageId: null,
         FoodCategoryId: null,
         MenuCategoryId: null,
         UnitId: null,
@@ -198,7 +198,9 @@ export default {
       loading: false,
       /* Ẩn hiện popup xoá */
       isShowPopup: false,
+      /* Đối tượng thôngg báo */
       popup: {},
+      
     };
   },
 
@@ -305,7 +307,10 @@ export default {
         console.log(error);
       }
     },
-
+    /**
+     * Click nút [Xoá] => Hiển thị popup question
+     * Author: TTKien(25/01/2022)
+     */
     onClickShowPopupDelete() {
       this.isShowPopup = true;
       let food = this.foodList.find((x) => x.FoodId == this.foodId);
@@ -316,6 +321,10 @@ export default {
         ),
       };
     },
+    /**
+     * Đóng popup question
+     * Author: TTKien(25/01/2022)
+     */
     onClickClosePopUp() {
       this.isShowPopup = false;
     },
@@ -336,7 +345,7 @@ export default {
         let me = this;
         this.pageIndex = 1;
         // Nếu obj có giá trị rỗng
-        if (objFilter.Value == "" || objFilter.Value == null) {
+        if (objFilter.Value === "" || objFilter.Value == null) {
           // Neu ds loc khac rong
           if (me.listObjFilters.length > 0) {
             // kiem tra xem co trung obj khong
@@ -386,7 +395,6 @@ export default {
       this.pageSize = 50;
       this.getFoods();
     },
-    onClickClosePopup() {},
     /**
      * Reset lại form food detail
      * Author(22/01/2022)
@@ -401,7 +409,7 @@ export default {
         CostPrice: 0,
         Description: null,
         DisplayStatus: 1,
-        ImageName: null,
+        ImageId: null,
         FoodCategoryId: null,
         MenuCategoryId: null,
         UnitId: null,
@@ -426,24 +434,11 @@ export default {
           me.food = response.data;
           //
           let foodKitchens = [];
-          // if (this.modeBtn == Const.modeBtn.Update) {
           for (const kitchenId in me.food.FoodKitchens) {
             const element = me.food.FoodKitchens[kitchenId].KitchenId;
             foodKitchens.push(element);
           }
           me.food.FoodKitchens = foodKitchens;
-          // }
-          //
-          // let foodModifiers = [];
-          // for (const fm in me.food.FoodModifiers) {
-          //   const element = me.food.FoodModifiers[fm];
-          //   let foodModifer = {
-          //     ModifierId: element.ModifierId,
-          //     AdditionalCharge: element.AdditionalCharge,
-          //   };
-          //   foodModifiers.push(foodModifer);
-          // }
-          // me.food.FoodModifiers = foodModifiers;
         })
         .catch((e) => {
           console.log(e);
@@ -454,39 +449,35 @@ export default {
      * Author: TTKien(20/1/2022)
      */
     callApiGetPaingFilterSort() {
-      try {
-        let me = this;
-        me.loading = true;
-        let sort = "";
-        let filters = "";
-        if (this.objSort.Column == null) sort = "";
-        else sort = JSON.stringify(this.objSort);
-        filters = JSON.stringify(this.listObjFilters);
-        api
-          .get(
-            `${this.apiRouter}/PagingFilterSort?pageSize=${this.pageSize}&pageIndex=${this.pageIndex}&objectFilters=${filters}&objectSort=${sort}`
-          )
-          .then((response) => {
-            me.foodList = response.data.Data;
-            if (response.data.Data.length > 0)
-              me.foodId = this.foodList[0].FoodId;
-            me.totalRecord = response.data.TotalRecord;
-            if (response.data) {
-              me.totalPage = response.data.TotalPage;
-            } else {
-              me.totalPage = 1;
-              me.totalRecord = 0;
-            }
-            setTimeout(() => {
-              me.loading = false;
-            }, 300);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      } catch (error) {
-        console.log(error);
-      }
+      const me = this;
+      me.loading = true;
+      let sort = "";
+      let filters = "";
+      if (this.objSort.Column == null) sort = "";
+      else sort = JSON.stringify(this.objSort);
+      filters = JSON.stringify(this.listObjFilters);
+      api
+        .get(
+          `${this.apiRouter}/PagingFilterSort?pageSize=${this.pageSize}&pageIndex=${this.pageIndex}&objectFilters=${filters}&objectSort=${sort}`
+        )
+        .then((response) => {
+          me.foodList = response.data.Data;
+          if (response.data.Data.length > 0)
+            me.foodId = this.foodList[0].FoodId;
+          me.totalRecord = response.data.TotalRecord;
+          if (response.data) {
+            me.totalPage = response.data.TotalPage;
+          } else {
+            me.totalPage = 1;
+            me.totalRecord = 0;
+          }
+          setTimeout(() => {
+            me.loading = false;
+          }, 300);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
     },
     /**
      * Gọi api xoá móna ăn theo id
@@ -495,16 +486,14 @@ export default {
     callApiDeleteFood() {
       api
         .delete(this.apiRouter, this.foodId)
-        .then((response) => {
-          console.log(response);
+        .then(() => {
+          this.getFoods();
         })
         .catch((error) => {
           console.log(error);
         });
-      setTimeout(() => {
-        this.getFoods();
-      }, 10);
     },
+  
   },
 
   watch: {

@@ -203,22 +203,47 @@
               <div class="m-photo">
                 <legend>Ảnh đại diện</legend>
                 <div class="m-flex">
-                  <div class="m-photo-default"></div>
+                  <div
+                    class="m-photo-default"
+                    v-if="!imageUrl && food.ImageId == null"
+                  ></div>
+                  <div class="m-photo-detail" v-if="imageUrl">
+                    <img :src="imageUrl" />
+                  </div>
+                  <div
+                    class="m-photo-detail"
+                    v-if="!imageUrl && food.ImageId != null"
+                  >
+                    <img
+                      :src="`https://localhost:44362/api/v1/Images/Image?id=${food.ImageId}`"
+                    />
+                  </div>
                   <!-- <div class="m-photo-icon"> Biểu tượng</div>   -->
                   <div class="m-btn-box">
+                    <input
+                      type="file"
+                      ref="file"
+                      style="display: none"
+                      @change="onChangeFileImage"
+                      accept="image/png, image/gif, image/jpeg, image/gif"
+                    />
                     <div
                       class="m-btn m-btn-add-photo"
                       title="Bấm vào đây để chọn ảnh"
+                      @click="$refs.file.click()"
                     >
                       ...
                     </div>
                     <br />
-                    <div class="m-btn m-btn-delete-photo" title="Xoá ảnh">
+                    <div
+                      class="m-btn m-btn-delete-photo"
+                      title="Xoá ảnh"
+                      @click="onClickDelImage()"
+                    >
                       <i class="fas fa-times" style="color: red"></i>
                     </div>
                   </div>
                 </div>
-
                 <div class="m-photo-label">
                   Chọn các ảnh có định dạng <br />
                   <b>(.jpg, .jpeg, .png, .gif)</b>
@@ -386,9 +411,10 @@ import { Money } from "v-money";
 import BasePopupWarning from "../../components/BasePopupWarning.vue";
 import Resource from "../../common/resource";
 import BasePopupQuestion from "../../components/BasePopupQuestion.vue";
+
 export default {
   props: ["isShowModal", "food", "modeBtn"],
-  components: { Money, BasePopupWarning, BasePopupQuestion  },
+  components: { Money, BasePopupWarning, BasePopupQuestion },
   data() {
     return {
       apiRouter: "Foods",
@@ -423,8 +449,13 @@ export default {
       },
       /* Title form */
       title: Enum.Title.Add,
+      /* Ẩn hiện popup */
       isShowPopup: false,
-      popup: {},
+      /* trạng thái và nội dung của popup */
+      popup: { Status: null, Title: null },
+      /* Đường dẫn ảnh */
+      imageUrl: null,
+      fileImage: null,
     };
   },
 
@@ -482,91 +513,27 @@ export default {
     },
     /**
      * Click nút [Cất] hoặc [Cất & thêm]
+     * Author: 25/01/2022
      */
     onClickSave(btn) {
       try {
         this.submitted = true;
         this.btn = btn;
-        // Chuyển trạng thái false = 1 (hiển thị), true = 0 (không hiển thị)
-        this.food.DisplayStatus = this.displayStatus == true ? 0 : 1;
-        // Bỏ qua các trường rỗng
-        this.foodModifiers = this.foodModifiers.filter(
-          (x) => x.ModifierId != null
-        );
-        // Kiểm tra trùng con trong danh sách sở thích phục vụ
-        // if (this.foodModifiers.length > 0) {
-        //   for (const fm in this.foodModifiers) {
-        //     const element = this.foodModifiers[fm];
-        //     var isExist = this.foodModifiers.indexOf(element);
-        //     console.log(isExist);
-        //   }
-        // }
-
-        if (
-          this.modeBtn == Const.modeBtn.Add ||
-          this.modeBtn == Const.modeBtn.Duplicate
-        ) {
-          // Nhân bản
-          if (this.modeBtn == Const.modeBtn.Duplicate) {
-            this.FoodId = null;
-            this.food.FoodKitchens = [];
-          }
-          // Convert list id thành list obj kitchenId
-          for (const kitchenId in this.foodKitchens) {
-            const element = this.foodKitchens[kitchenId];
-            let objKitchenId = { KitchenId: element };
-            this.food.FoodKitchens.push(objKitchenId);
-          }
-          this.food.FoodModifiers = this.foodModifiers;
-        } else {
-          //UPDATE
-          // Lấy danh sách thay đổi bếp chế biến có edit mode
-          this.food.FoodKitchens = this.compareTwoArrayKitchen(
-            this.food.FoodKitchens,
-            this.foodKitchens
-          );
-          // Lấy danh sách thay đổi sở thích phục vu có edit mode
-          this.food.FoodModifiers = this.compareTwoArrayModifier(
-            this.food.FoodModifiers,
-            this.foodModifiers
-          );
-        }
-        this.$v.$touch();
-        // Nếu form error
-        if (this.$v.$invalid) {
-          // Tên món ăn rỗng
-          if (this.$v.food.FoodName.$error) {
-            setTimeout(() => {
-              this.$refs.txtFoodName.focus();
-            }, 0);
-            return;
-          }
-          // Mã món ăn rỗng hoặc quá 25 kí tự
-          if (this.$v.food.FoodCode.$error) {
-            setTimeout(() => {
-              this.$refs.txtFoodCode.focus();
-            }, 10);
-            return;
-          }
-          // K chọn đơn vị tính
-          if (this.$v.food.UnitId.$error) {
-            return;
-          }
-          // Giá bán rỗng
-          if (this.$v.food.SellingPrice.$error) {
-            setTimeout(() => {
-              this.$refs.txtSellingPrice.focus();
-            }, 10);
-            return;
-          }
+        // Mapping dữ liệu
+        this.mappingData();
+        // Kiểm tra điều kiện
+        let isValid = this.isValid();
+        if (!isValid) {
+          return;
         } else {
           if (
+            // Thêm mới hoặc nhân bản
             this.modeBtn == Const.modeBtn.Add ||
             this.modeBtn == Const.modeBtn.Duplicate
           ) {
             this.callApiCreateFood();
           } else {
-            // UPDATE
+            // Sửa
             this.callApiUpdateFood();
           }
         }
@@ -575,135 +542,20 @@ export default {
       }
     },
     /**
-     * Reset form khi cất và thêm
-     * Author(25/01/2022)
+     * Thay đổi ảnh khi chọn ảnh mới
+     * Author: 25/01/2022
      */
-    resetForm() {
-      this.displayStatus = false;
-      this.title = Enum.Title.Add;
-      this.foodModifiers = [];
-      this.foodKitchens = [];
-      this.submitted = false;
-      this.$emit("resetForm");
-      setTimeout(() => {
-        this.$refs.txtFoodName.focus();
-      }, 0);
-    },
-    /* ================== Api ======================== */
-    /**
-     * Gọi api thêm mới món ăn
-     * Author: TTKien(22/01/2022)
-     */
-    callApiCreateFood() {
-      const me = this;
-      api
-        .create(me.apiRouter, me.food)
-        .then((res) => {
-          // Nếu có lỗi dũ liệu nhập
-          if (res.data.Status == Resource.StatusCode.Warning) {
-            me.isShowPopup = true;
-            me.popup.Status = Resource.PopUp.Status.Warning;
-            me.popup.Title = res.data.Data[0];
-          } else {
-            me.$emit("getFoods");
-            me.displayStatus = false;
-            if (me.btn == Const.btn.Save) {
-              me.onClickClose();
-            } else {
-              this.resetForm();
-            }
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+
+    onChangeFileImage(e) {
+      this.fileImage = e.target.files[0];
+      this.imageUrl = URL.createObjectURL(this.fileImage);
     },
     /**
-     * Gọi api thêm mới món ăn
-     * Author: TTKien(22/01/2022)
+     * Click nút xoá ảnh
+     * Author: 25/01/2022
      */
-    callApiUpdateFood() {
-      const me = this;
-      api
-        .update(me.apiRouter, me.food.FoodId, me.food)
-        .then((res) => {
-          if (res.data.Status == Resource.StatusCode.Warning) {
-            this.isShowPopup = true;
-            this.popup.Status = Resource.PopUp.Status.Warning;
-            this.popup.Title = res.data.Data[0];
-          } else {
-            me.$emit("getFoods");
-            if (me.btn == Const.btn.Save) {
-              me.onClickClose();
-            } else {
-              this.resetForm();
-            }
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    },
-    /* ============Lấy data============ */
-    /**
-     * Lấy tất cả đơn vị tính
-     * Author: TTKien(22/01/2022)
-     */
-    getUnits() {
-      let me = this;
-      api
-        .get(`Units`)
-        .then((response) => {
-          me.units = response.data;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    },
-    /**
-     * Lấy tất cả sở thích phục vụ
-     * Author: TTKien(22/01/2022)
-     */
-    getModifiers() {
-      let me = this;
-      api
-        .get(`Modifiers`)
-        .then((response) => {
-          me.modifiers = response.data;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    },
-    /**
-     * Lấy tất cả nhóm thực đơn
-     * Author: TTKien(22/01/2022)
-     */
-    getMenuCategorys() {
-      let me = this;
-      api
-        .get(`MenuCategorys`)
-        .then((response) => {
-          me.menuCategorys = response.data;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    },
-    /**
-     * Lấy tất cả bếp chế biến
-     * Author: TTKien(22/01/2022)
-     */
-    getKitchens() {
-      let me = this;
-      api
-        .get(`Kitchens`)
-        .then((response) => {
-          me.kitchens = response.data;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+    onClickDelImage() {
+      this.imageUrl = null;
     },
     /*================== Khác ================= */
     /**
@@ -727,6 +579,93 @@ export default {
         str2 = str2.join("").toUpperCase();
         str2 = str2.slice(0, 25);
         this.food.FoodCode = str2;
+      }
+    },
+
+    /**
+     * Kiểm tra điều kiện form khi lưu
+     * Author(25/01/2022)
+     */
+    isValid() {
+      this.$v.$touch();
+      // Nếu form error
+      if (this.$v.$invalid) {
+        // Tên món ăn rỗng
+        if (this.$v.food.FoodName.$error) {
+          setTimeout(() => {
+            this.$refs.txtFoodName.focus();
+          }, 0);
+          return false;
+        }
+        // Mã món ăn rỗng hoặc quá 25 kí tự
+        if (this.$v.food.FoodCode.$error) {
+          setTimeout(() => {
+            this.$refs.txtFoodCode.focus();
+          }, 10);
+          return false;
+        }
+        // K chọn đơn vị tính
+        if (this.$v.food.UnitId.$error) {
+          return false;
+        }
+        // Giá bán rỗng
+        if (this.$v.food.SellingPrice.$error) {
+          setTimeout(() => {
+            this.$refs.txtSellingPrice.focus();
+          }, 10);
+          return false;
+        }
+      }
+      return true;
+    },
+    /**
+     * Convert lại dữ liệu
+     * Author(25/01/2022)
+     */
+    mappingData() {
+      // Chuyển trạng thái false = 1 (hiển thị), true = 0 (không hiển thị)
+      this.food.DisplayStatus = this.displayStatus == true ? 0 : 1;
+      // Bỏ qua các trường rỗng trong sở thích dịh vụ của món ăn
+      this.foodModifiers = this.foodModifiers.filter(
+        (x) => x.ModifierId != null
+      );
+      // Kiểm tra trùng con trong danh sách sở thích phục vụ
+      // if (this.foodModifiers.length > 0) {
+      //   for (const fm in this.foodModifiers) {
+      //     const element = this.foodModifiers[fm];
+      //     var isExist = this.foodModifiers.indexOf(element);
+      //     console.log(isExist);
+      //   }
+      // }
+      // Nếu là thêm mới hoặc sửa
+      if (
+        this.modeBtn == Const.modeBtn.Add ||
+        this.modeBtn == Const.modeBtn.Duplicate
+      ) {
+        // Nhân bản
+        if (this.modeBtn == Const.modeBtn.Duplicate) {
+          this.FoodId = null;
+          this.food.FoodKitchens = [];
+        }
+        // Convert list id thành list obj kitchenId
+        for (const kitchenId in this.foodKitchens) {
+          const element = this.foodKitchens[kitchenId];
+          let objKitchenId = { KitchenId: element };
+          this.food.FoodKitchens.push(objKitchenId);
+        }
+        this.food.FoodModifiers = this.foodModifiers;
+      } else {
+        // Sửa
+        // Lấy danh sách thay đổi bếp chế biến có edit mode
+        this.food.FoodKitchens = this.compareTwoArrayKitchen(
+          this.food.FoodKitchens,
+          this.foodKitchens
+        );
+        // Lấy danh sách thay đổi sở thích phục vu có edit mode
+        this.food.FoodModifiers = this.compareTwoArrayModifier(
+          this.food.FoodModifiers,
+          this.foodModifiers
+        );
       }
     },
     /**
@@ -755,9 +694,8 @@ export default {
       str = str.toUpperCase().split(" ").join("");
       return str;
     },
-
     /**
-     * So sánh 2 mảng trả về mảng mới kèm thuộc tính edit mode.
+     * So sánh 2 mảng bếp biến của món ăn trả về mảng mới kèm thuộc tính edit mode.
      * Author: TTKien(23/01/2022)
      */
     compareTwoArrayKitchen(arrOld, arrNew) {
@@ -789,7 +727,7 @@ export default {
       return res;
     },
     /**
-     * So sánh 2 mảng trả về mảng mới kèm thuộc tính edit mode.
+     * So sánh 2 mảng sở thích của món ăn trả về mảng mới chứa sự khác nhau.
      * Author: TTKien(23/01/2022)
      */
     compareTwoArrayModifier(arrOld, arrNew) {
@@ -797,6 +735,7 @@ export default {
       let arrDel = [];
       let arrAdd = [];
       let foodModifiers = [];
+      /* Conver mảng cũ có các thuộc tính như mảng mới*/
       for (const fm in arrOld) {
         const element = arrOld[fm];
         let foodModifer = {
@@ -806,10 +745,7 @@ export default {
         foodModifiers.push(foodModifer);
       }
       arrOld = foodModifiers;
-      for (const fm in arrNew) {
-        const element = arrNew[fm];
-        arrNew[fm].AdditionalCharge = Number.parseInt(element.AdditionalCharge);
-      }
+
       // Lấy ra các đối tượng xoá - Có trong mảng cũ nhưng không có trong mảng mới
       arrDel = arrOld.filter(function (v) {
         return arrNew.every((n) => JSON.stringify(n) !== JSON.stringify(v));
@@ -819,13 +755,13 @@ export default {
         return arrOld.every((n) => JSON.stringify(n) !== JSON.stringify(v));
       });
 
-      // Thêm edit mode: 1 - Thêm, 3 - Xoá, 2 - Sửa
+      // Thêm vào mảng mới. edit mode: 1 - Thêm, 3 - Xoá, 2 - Sửa
       for (const objDel in arrDel) {
         if (Object.hasOwnProperty.call(arrDel, objDel)) {
           const element = arrDel[objDel];
           res.push({
             ModifierId: element.ModifierId,
-            AdditionalCharge: Number.parseInt(element.AdditionalCharge),
+            AdditionalCharge: element.AdditionalCharge,
             EditMode: 3,
           });
         }
@@ -835,12 +771,175 @@ export default {
           const element = arrAdd[objAdd];
           res.push({
             ModifierId: element.ModifierId,
-            AdditionalCharge: Number.parseInt(element.AdditionalCharge),
+            AdditionalCharge: element.AdditionalCharge,
             EditMode: 1,
           });
         }
       }
       return res;
+    },
+    /**
+     * Reset form khi cất và thêm
+     * Author(25/01/2022)
+     */
+    resetForm() {
+      this.displayStatus = false;
+      this.title = Enum.Title.Add;
+      this.foodModifiers = [];
+      this.foodKitchens = [];
+      this.submitted = false;
+      this.imageUrl = null;
+      this.$emit("resetForm");
+      setTimeout(() => {
+        this.$refs.txtFoodName.focus();
+      }, 0);
+    },
+    /* ================== Api ======================== */
+    /**
+     * Gọi api thêm mới món ăn
+     * Author: TTKien(22/01/2022)
+     */
+    async callApiCreateFood() {
+      // Thêm ảnh
+      if (
+        this.modeBtn == Const.modeBtn.Add ||
+        (this.modeBtn == Const.modeBtn.Duplicate && this.imageUrl != null)
+      ) {
+        await this.callApiUploadFile(); 
+      }
+      // Thêm món
+      api
+        .create(this.apiRouter, this.food)
+        .then((res) => {
+          // Nếu có lỗi dũ liệu nhập
+          if (res.data.Status == Resource.StatusCode.Warning) {
+            this.isShowPopup = true;
+            this.popup.Status = Resource.PopUp.Status.Warning;
+            this.popup.Title = res.data.Data[0];
+          } else {
+            this.$emit("getFoods");
+            this.displayStatus = false;
+            if (this.btn == Const.btn.Save) {
+              this.onClickClose();
+            } else {
+              this.resetForm();
+            }
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+    /**
+     * Gọi api sửa món ăn
+     * Author: TTKien(22/01/2022)
+     */
+    async callApiUpdateFood() {
+      // Thêm ảnh
+      if (this.imageUrl) {
+        await this.callApiUploadFile();
+      }
+      api
+        .update(this.apiRouter, this.food.FoodId, this.food)
+        .then((res) => {
+          if (res.data.Status == Resource.StatusCode.Warning) {
+            this.isShowPopup = true;
+            this.popup.Status = Resource.PopUp.Status.Warning;
+            this.popup.Title = res.data.Data[0];
+          } else {
+            this.$emit("getFoods");
+            if (this.btn == Const.btn.Save) {
+              this.onClickClose();
+            } else {
+              this.resetForm();
+            }
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+
+    /**
+     * Gọi api lưu ảnh
+     * Author: TTKien(26/01/2022)
+     */
+    async callApiUploadFile() {
+      let me = this;
+      let data = new FormData();
+      data.append("Files", this.fileImage);
+      await api
+        .create(`Images/UploadImage`, data)
+        .then(function (res) {
+          me.food.ImageId = res.data;
+        })
+        .catch(function (e) {
+          console.log(e);
+        });
+    },
+    /**
+     * Gọi api lấy ảnh
+     * Author: TTKien(26/01/2022)
+     */
+    callApiGetImageById() {},
+
+    /* ============Lấy data============ */
+    /**
+     * Lấy tất cả đơn vị tính
+     * Author: TTKien(22/01/2022)
+     */
+    getUnits() {
+      let me = this;
+      api
+        .get(`Units`)
+        .then((response) => {
+          me.units = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    /**
+     * Lấy tất cả sở thích phục vụ
+     * Author: TTKien(22/01/2022)
+     */
+    getModifiers() {
+      api
+        .get(`Modifiers`)
+        .then((response) => {
+          this.modifiers = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    /**
+     * Lấy tất cả nhóm thực đơn
+     * Author: TTKien(22/01/2022)
+     */
+    getMenuCategorys() {
+      api
+        .get(`MenuCategorys`)
+        .then((response) => {
+          this.menuCategorys = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    /**
+     * Lấy tất cả bếp chế biến
+     * Author: TTKien(22/01/2022)
+     */
+    getKitchens() {
+      api
+        .get(`Kitchens`)
+        .then((response) => {
+          this.kitchens = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
     },
   },
 
@@ -856,7 +955,6 @@ export default {
       },
       FoodName: { required },
       UnitId: { required },
-
       SellingPrice: { required },
     },
   },
@@ -877,18 +975,22 @@ export default {
      * Author: TTKien(22/01/2022)
      */
     isShowModal() {
+      this.tabIndex = 0;
+      this.submitted = false;
+      // Chuyển title form
       this.title =
         this.modeBtn == Const.modeBtn.Update
           ? Enum.Title.Update
           : Enum.Title.Add;
-      this.tabIndex = 0;
-      this.submitted = false;
       this.displayStatus = this.food.DisplayStatus == 1 ? false : true;
+      // Nếu mode là sửa hoặc nhân bản
       if (
         this.modeBtn == Const.modeBtn.Update ||
         this.modeBtn == Const.modeBtn.Duplicate
       ) {
+        this.imageUrl = null;
         this.foodKitchens = this.food.FoodKitchens;
+        // Convert danh sách sở thích món ăn
         let foodModifiers = [];
         for (const fm in this.food.FoodModifiers) {
           const element = this.food.FoodModifiers[fm];
@@ -902,11 +1004,12 @@ export default {
       } else {
         this.foodKitchens = [];
         this.foodModifiers = [];
+        this.imageUrl = null;
       }
-
       setTimeout(() => {
+        // Focus tên món ăn đầu tiên
         this.$refs.txtFoodName.focus();
-      }, 10);
+      }, 0);
     },
     /**
      * Khi chuyển tab mới

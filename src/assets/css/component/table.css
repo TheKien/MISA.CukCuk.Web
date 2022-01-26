@@ -222,6 +222,13 @@ table.m-table tr:nth-child(2n) {
   width: 100%;
 }
 
+.m-filter .v-select{
+width: 100%;
+}
+
+.m-filter .v-select{
+  background-color: #fff;
+  }
 /* tbody */
 .m-table-tbody {
   background-color: #fff;

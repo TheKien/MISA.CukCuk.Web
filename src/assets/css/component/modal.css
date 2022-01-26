@@ -225,6 +225,18 @@ table.m-modal-table th {
   width: 160px;
   height: 120px;
 }
+.m-photo-detail{
+  display: flex;
+  background-color: #fff;
+  justify-content: center;
+  width: 160px;
+  height: 120px;
+}
+.m-photo-detail img {
+  height: 100%;
+ width: 100%;
+ object-fit: contain;
+}
 .m-modal-info
 {
   font-style: italic;
@@ -259,4 +271,7 @@ table.m-modal-table tbody tr:hover {
 }
 table.m-modal-table .m-input{
   background-color: transparent;
+}
+.m-photo .m-btn.m-btn-add-photo{
+  padding: 0;
 }
